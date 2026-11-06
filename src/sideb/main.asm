@@ -31,7 +31,7 @@
         org 1200h
 
 ; ---------------- ワークエリア ----------------
-defc W_TICK = WORK_BOTTOM + 000h   ; ISR フレームカウンタ
+defc W_TICK = WORK_BOTTOM + 000h   ; フレームカウンタ (sound_update)
 defc W_KEYS = WORK_BOTTOM + 001h   ; bit0=上 1=下 2=左 3=右 4=射撃 5=CR 6=C
 defc W_KEYS_PREV = WORK_BOTTOM + 002h
 defc W_STATE = WORK_BOTTOM + 003h   ; ST_xxx

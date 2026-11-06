@@ -8,6 +8,8 @@ New-Item -ItemType Directory -Path out -Force | Out-Null
 # PCG データ再生成 (アート更新時)
 python tools\pcggen.py
 if ($LASTEXITCODE -ne 0) { exit 1 }
+python tools\musicgen.py
+if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Side A (ローダ + PCG データ) → 0x2000
 z80asm -b -mz80 -l -s -Isrc "-o=out\sidea.bin" src\sidea\loader.asm

@@ -81,9 +81,12 @@ MZ-1500 / Z80A 3.58MHz / テキスト40x25 + PCG / デュアルPSG (SN76489AN x2
 - `sound_update`: BGM/SE シーケンサを1tick進め、PSG (E9h 両チャンネル同時) へ書き込む。
   SE は要求時に BGM に優先して同一tickへ注入
 - 8255 PC2 タイマー割り込みゲートは閉じたまま使用しない
-- BGM データ形式: `[継続tick][バイト数][PSGバイト列...]` の連鎖, FFh=終端
+- BGM データ形式: `[継続tick][バイト数][PSGバイト列...]` の連鎖, FFh=終端。
+  PSG の矩形波 3 音 (ch0/1/2) と短いノイズ打楽器 (ch3) を使用し、
+  各音符で音量レジスタ 90h/B0h/D0h を個別に設定する
 - SE データ形式: `[バイト数][PSGバイト列...]` を 1tick 毎に 1 エントリ消費, 00h=終端
-- 音色: L=R 同一内容 (E9h デュアルモノラル)。曲ごとに音色配分はデータ側で調整
+- 音色: L=R 同一内容 (E9h デュアルモノラル)。曲ごとの譜面は `tools/musicgen.py`、
+  キャラクタのドット絵は `tools/pcggen.py` で管理し、ビルド時にアセンブラデータへ生成
 
 ## 5. ステージ構成とゲームバランス (全 5 面自力クリア想定 約 12-15 分)
 
@@ -122,6 +125,7 @@ MZ-1500 / Z80A 3.58MHz / テキスト40x25 + PCG / デュアルPSG (SN76489AN x2
 - アセンブラ: z88dk z80asm (`z80asm -b -mz80 -l`)
 - パッケージ: `tools/mkmzt.py` (128 バイト MZT ヘッダ + 本体)
 - PCG/マップ生成: `tools/pcggen.py` (ASCII アート → 3 プレーン DB ソース)
+- BGM 生成: `tools/musicgen.py` (音符譜面 → 3 音 + ノイズの PSG ストリーム)
 - E2E: `dotnet run --project src\Mz1500.Cli -c Release -- --roms romsample
   --qd out\ParadionA.mzt --qd-swap out\ParadionB.mzt@<F> --key D@<F2>
   --frames N --ppm out\frame.ppm --wav out\game.wav`
@@ -132,6 +136,6 @@ MZ-1500 / Z80A 3.58MHz / テキスト40x25 + PCG / デュアルPSG (SN76489AN x2
 
 1. 敵追加 (ナイト型: 誘導 / キャノン型: 壁設置型) とボス 5 種の完全グラフィック
 2. オープニング / エンディング演出 (テキスト + BGM)
-3. BGM 5 曲 + SE 拡充 (tools/musicgen.py で譜面 → PSG ストリーム自動生成)
+3. BGM 5 曲への拡充と SE 追加
 4. ジョイスティック対応 (E008h PWM 読み取り)
 5. 2px 中間スクロール (ライン単位分割実行) の検討

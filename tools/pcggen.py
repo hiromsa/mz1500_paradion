@@ -140,25 +140,31 @@ b0.put(0x5A, [  # heart (REST icon)
 
 # ---------------------------------------------------------------- bank 1: player
 b1 = Bank()
-SHIP = [
-    "......CC........",
-    ".....CWKC.......",
-    ".....CWKC.......",
-    ".C...CWWKC....C.",
-    ".CC..CWWKC...CC.",
-    ".CCCWWWWWWKCCCC.",
-    "CCWWCWWWWWWCWWCC",
-    "CWWWWWWWWWWWWWWC",
-    "CWWKCWWWWWWKWWWC",
-    ".CWKCWWWWWWKWWC.",
-    "..CCWWWWWWWWCC..",
-    "...CCWWCCWWCC...",
-    "....CCWCCWCC....",
-    ".....CC..CC.....",
-    "....YY....YY....",
-    "...YKKY..YKKY...",
-]
-b1.put16(0x00, SHIP)          # phase 0 (shift 0)
+def center16(rows):
+    """Center variable-width pixel-art rows in a transparent 16px cell."""
+    assert len(rows) == 16
+    assert all(len(row) <= 16 for row in rows), [(row, len(row)) for row in rows if len(row) > 16]
+    return [row.center(16, '.') for row in rows]
+
+PALADIN = center16([
+    "Y",                    # crest
+    "YYY",
+    "YWWY",
+    "WWCWWC",               # helmet and visor
+    "WWKKWW",
+    "CCWWKKWWCC",           # broad pauldrons
+    "CWWWWKKWWWWC",
+    "CCWWWCWWWWCC",
+    "CWWWWCWWCWWWC",
+    "CCWWWWYYWWWWCC",       # gold breastplate
+    ".CWWWWYYWWWWC.",
+    "..CWWWWYYWWC..",
+    "...CCWYYYYWCC...",     # split cloak
+    "....CCWYYWCC....",
+    ".....C....C.....",
+    "....YY....YY....",     # boots
+])
+b1.put16(0x00, PALADIN)       # phase 0 (shift 0)
 b1.shift16(0x00, 0x04, 2)     # phase 1 (shift 2px)
 b1.shift16(0x00, 0x08, 4)     # phase 2 (shift 4px)
 b1.shift16(0x00, 0x0C, 6)     # phase 3 (shift 6px)
@@ -198,46 +204,86 @@ b1.put(0x25, [  # powerup: 1UP
 
 # ---------------------------------------------------------------- bank 2: enemies
 b2 = Bank()
-GARGOYLE = [
-    "MM..........MM..", "MMM........MMM..", "MMMM..KK..MMMM..",
-    "MMM..KWWK..MMM..", "MM..KWKKWK..MM..", "M..KKWWWWKK..M..",
-    "...KWWKKWWK.....", "..KKWWWWWWKK....", "..KKWKKKKWKK....",
-    "...KWKKKKWK.....", "....KWKKWK......", "....KWKKWK......",
-    "...KWWKKWWK.....", "...KK....KK.....", "..KK......KK....",
-    "..M........M....",
-]
-GARGOYLE2 = [
-    "................", "M............M..", "MM...........MM.",
-    ".MMM..KK..MMM...", "..MM.KWWK.MM....", "...KKWWWWKK.....",
-    "...KWWKKWWK.....", "..KKWWWWWWKK....", "..KKWKKKKWKK....",
-    "M..KWKKKKWK..M..", "MM..KWKKWK..MM..", ".MM.KWKKWK.MM...",
-    "..KKWWKKWWKK....", "..KK............", ".KK.............",
+GARGOYLE = center16([
+    "M..............M",       # horns
+    "MM............MM",
+    "MMM..WW..WW..MMM",
+    "MM..WWWWWWWW..MM",
+    "M..WWKKWWKKWW..M",
+    "..WWKRRWWRRKWW..",       # eyes in a bat-winged face
+    ".MWWKKWWWWKKWWM.",
+    "MMWWKKWWWWKKWWMM",
+    ".MWWWWKKKKWWWWM.",
+    "..WWKKWWKKWWKK..",
+    "...WKKKKKKKKW...",
+    "...WWKKRRKKWW...",
+    "....WWKKKKWW....",
+    "...MMWW..WWMM...",       # claws
+    "..MM........MM..",
+    ".M............M.",
+])
+GARGOYLE2 = center16([
     "................",
-]
+    "M..............M",
+    "MM............MM",
+    "MMM..WW..WW..MMM",
+    "MM..WWWWWWWW..MM",
+    "M..WWKKWWKKWW..M",
+    "..WWKRRWWRRKWW..",
+    ".MWWKKWWWWKKWWM.",
+    "MMWWKKWWWWKKWWMM",
+    ".MWWWWKKKKWWWWM.",
+    "..WWKKWWKKWWKK..",
+    "...WKKKKKKKKW...",
+    "...WWKKRRKKWW...",
+    "....WWKKKKWW....",
+    ".....MM..MM.....",       # wings beat upward
+    "......M..M......",
+])
 b2.put16(0x00, GARGOYLE)
 b2.put16(0x04, GARGOYLE2)
-WISP = [
-    "................", ".....BBBB.......", "....BWWWWB......",
-    "...BWWCCWWB.....", "...BWCCWWCB.....", "..BWWCCCCWWB....",
-    "..BWCCWWCCWB....", "..BWCCWWCCWB....", "..BWWCCCCWWB....",
-    "...BWCCCCWB.....", "...BBWWWWBB.....", "....BBBBBB......",
-    ".....B..B.......", "....B....B......", "...B......B.....",
+WISP = center16([
+    ".......C........",
+    "......CWC.......",
+    ".....CWWWC......",
+    "....CWWWWWC.....",
+    "...CWWKKWWWC....",       # skull and hollow eyes
+    "..CWWWRRWWWCC...",
+    "..CWWWWWWWWWC...",
+    "..CWWWCWWCWWC...",
+    "...CWWWWWWWC....",
+    "....CWWWWWC.....",
+    ".....CCCCCC.....",
+    "....CC.CC.CC....",       # curling ghost tail
+    "...CC......C....",
+    "..C........CC...",
+    ".C............C.",
     "................",
-]
-WISP2 = [
-    "................", ".....BBBB.......", "....BWWWWB......",
-    "...BWWCCWWB.....", "...BWCCWWCB.....", "..BWWCCCCWWB....",
-    "..BWCCWWCCWB....", "..BWCCWWCCWB....", "..BWWCCCCWWB....",
-    "...BWCCCCWB.....", "...BBWWWWBB.....", "....BBBBBB......",
-    "......B.B.......", ".....B...B......", "....B.....B.....",
+])
+WISP2 = center16([
     "................",
-]
+    ".......C........",
+    "......CWC.......",
+    ".....CWWWC......",
+    "....CWWWWWC.....",
+    "...CWWKKWWWC....",
+    "..CWWWRRWWWCC...",
+    "..CWWWWWWWWWC...",
+    "..CWWWCWWCWWC...",
+    "...CWWWWWWWC....",
+    "....CWWWWWC.....",
+    ".....CCCCCC.....",
+    "......CC.CC.....",
+    ".....CC...CC....",
+    "....CC.....CC...",
+    "................",
+])
 b2.put16(0x08, WISP)
 b2.put16(0x0C, WISP2)
 
 # ---------------------------------------------------------------- bank 3: boss
 b3 = Bank()
-TRENT = [  # 螟ｧ讓ｹ縺ｮ鬲皮黄 繝医Ξ繝ｳ繝・(32x32)
+TRENT = [  # 大樹の魔物トレント (32x32)
     "....gGGGGg......gGGGGg..........",
     "..gGGgggGGGg...gGGggGGg.........",
     ".gGGgRRRRgGGg.gGGgRRRgGGg.......",
@@ -281,46 +327,52 @@ def put32(bank, code, art):
             rows = [row[cx*8:(cx+1)*8] for row in art[cy*8:(cy+1)*8]]
             bank.put(code + cy*4 + cx, rows)
 
+def center32(rows):
+    """Center variable-width pixel-art rows in a transparent 32px cell."""
+    assert len(rows) == 32
+    assert all(len(row) <= 32 for row in rows), [(row, len(row)) for row in rows if len(row) > 32]
+    return [row.center(32, '.') for row in rows]
+
 put32(b3, 0x00, TRENT)
 # frame 2: eyes squint (YY -> KK on the face rows)
 TRENT2 = TRENT[:3] + [r.replace('YY', 'KK') for r in TRENT[3:]]
 put32(b3, 0x10, TRENT2)
-DARKLORD = [  # 蟷ｻ鬲皮視繝繝ｼ繧ｯ繝ｭ繝ｼ繝・(32x32)
-    "..............WWWW..............",
-    ".............WKKKW..............",
-    "............WKKKKKW.............",
-    "...........WKKKKKKKW............",
-    "....WWWWWWWKKKKKKKWWWWWWW.......",
-    "...WWKKKKKKKKKKKKKKKKKKWW.......",
-    "..WKKKWWKKKKKKKKKKKWWKKKKW......",
-    ".WKKWWKKKKKKKKKKKKKKKWWKKKW.....",
-    ".WKKKKKKKKKKKKKKKKKKKKKKKKW.....",
-    "WKKKKKKKKMMKKKKKMMKKKKKKKKW.....",
-    "WKKKKKKKMMMMKKKMMMMKKKKKKKW.....",
-    "WKKKKKKKMRRMKKKMRRMKKKKKKKW.....",
-    "WKKKKKKKKMMKKKKKMMKKKKKKKKW.....",
-    ".WKKKKKKKKKKKKKKKKKKKKKKKW......",
-    "..WWKKKKKKKKKKKKKKKKKKKWW.......",
-    "....WWKKKKKKKKKKKKKKKWWW........",
-    "......WWKKKKKKKKKKKWWW..........",
-    "........WKKKKKKKKKW.............",
-    "....WKKKKKKKKKKKKKKKKKW.........",
-    "...WKKKKKKKKKKKKKKKKKKKW........",
-    "..WKKKKKKKKKKKKKKKKKKKKKW.......",
-    ".WKKKKKKKKKKKKKKKKKKKKKKKW......",
-    ".WKKKKKKKKKKKKKKKKKKKKKKKW......",
-    "..WKKKKKKKKKKKKKKKKKKKKKW.......",
-    "...WKKKKKKKKKKKKKKKKKKKW........",
-    "....WWKKKKKKKKKKKKKKKWW.........",
-    "......WWKKKKKKKKKKKWW...........",
-    "........WWKKKKKKKWW.............",
-    "..........WWKKKWW...............",
-    "............WWW.................",
-    "............W.W.................",
-    ".............W..................",
-]
+DARKLORD = center32([  # 幻魔王ダークロード: 冠・角・赤眼・紫の鎧
+    "Y",
+    "YYY",
+    "..W...W..",
+    ".WW...WW.",
+    "WWWWWWWWW",
+    "WWKKKKKWW",
+    ".WWKKKKKWW.",
+    "..WWKKKKKWW..",
+    "...WWKKKKKWW...",
+    "..WWKKKKKKKKWW..",
+    ".WWKKKKKKKKKKWW.",
+    "WWKKKKKKKKKKKKWW",
+    "WWKKKRRKKRRKKKWW",
+    "WWKKRRRRKKRRRRKKWW",
+    ".WWKKKKKKKKKKKKWW.",
+    "..WWKKKKKKKKKKWW..",
+    "...WWMMMMMMMMWW...",
+    "..WWMMMMMMMMMMWW..",
+    ".WWMMMCWWWWCMMMWW.",
+    "WWMMMMWWMMMMWWMMMMWW",
+    "WWMMMCCWWWWWWCCMMMWW",
+    ".WWMMCCWWYYYYWWCCMMWW.",
+    "..WWMMWWWWYYWWWWMMWW..",
+    "...WWMMWWWWWWWWMMWW...",
+    "....WWMMMMMMMMMMWW....",
+    "....WWMMMMWWMMMMWW....",
+    "...WWMMWW..WWMMWW...",
+    "..WWMMWW....WWMMWW..",
+    ".WWMMWW......WWMMWW.",
+    "WWMMWW..........WWMMWW",
+    "..WWWW..........WWWW..",
+    "....WW..........WW....",
+])
 put32(b3, 0x20, DARKLORD)
-DARKLORD2 = DARKLORD[:9] + [r.replace('MM', 'RR') for r in DARKLORD[9:15]] + DARKLORD[15:]
+DARKLORD2 = DARKLORD[:9] + [r.replace('RR', 'YY') for r in DARKLORD[9:15]] + DARKLORD[15:]
 put32(b3, 0x30, DARKLORD2)
 
 BANKS = [b0, b1, b2, b3]
