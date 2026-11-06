@@ -1,0 +1,17 @@
+# Generated builds and local test artifacts
+/out/
+/tmp/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Assembler outputs
+*.o
+*.lis
+*.sym
+
+# OS files
+.DS_Store
+Thumbs.db
