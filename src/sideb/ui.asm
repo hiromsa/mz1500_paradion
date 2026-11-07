@@ -80,11 +80,12 @@ HC_NEW:
 
 ; ------------------------------------------------------------
 ; メッセージ表示 (行中央寄せ)
-; 入力: HL = 文字列 (00h 終端, ディスプレイコード), C = 行番号
+; 入力: HL = 文字列 (0FFh 終端, ディスプレイコード, 00h = 空白), C = 行番号
 ; 出力: VRAM_TEXT の指定行中央に文字列を描画
 ; 破壊: A, B, C, DE, HL, F
 ; ------------------------------------------------------------
 show_msg:
+        push bc                         ; 行番号退避 (終端で属性 OFF 処理)
         ld e,l
         ld d,h                          ; DE = 文字列
         push de
@@ -107,7 +108,7 @@ show_msg:
         push de
         ld b,0
 SM_CNT: ld a,(de)
-        or a
+        cp 0FFh                         ; 終端までの文字数を数える
         jr z,SM_CN
         inc b
         inc de
@@ -120,14 +121,15 @@ SM_CN:  pop de                          ; DE = 文字列
         ld b,0
         add hl,bc
 SM_P:   ld a,(de)
-        or a
+        cp 0FFh                         ; 00h は空白としてそのまま書く
         jr z,SM_E
         ld (hl),a
         inc hl
         inc de
         jr SM_P
 SM_E:   pop de
-        ret
+        pop bc                          ; C = 行番号
+        jp msg_attr_off                 ; 行の PCG 属性を表示 OFF にして戻る
 
 ; ------------------------------------------------------------
 ; メッセージ領域クリア (行 9-13, 列 4-36)
@@ -150,6 +152,12 @@ CM2:    ld (hl),0
         add hl,de
         pop bc
         djnz CM1
+        ; 消した行の PCG 属性を表示 ON (バンク0) へ戻す (行 9-13 = 200 セル連続)
+        ld hl,0DC00h + 9*40
+        ld de,0DC01h + 9*40
+        ld bc,200
+        ld (hl),PCGATTR_BANK0
+        ldir
         ret
 
 ; ------------------------------------------------------------
@@ -160,10 +168,113 @@ CM2:    ld (hl),0
 ; 破壊: A, HL, F
 ; ------------------------------------------------------------
 msgs_update:
+        ; アイドル (FFFFh) なら何もしない
+        ld a,(W_MSGTIMER+1)
+        cp 0FFh
+        jr nz,MSGU_ACT
+        ld a,(W_MSGTIMER)
+        cp 0FFh
+        ret z
+MSGU_ACT:
+        ; 表示中は行 9-13 の PCG 属性表示 OFF を毎フレーム再 assert
+        ; (スプライトの消去パスが属性を表示 ON に戻し文字を隠すため)
+        call msgs_attr_off
         ld hl,W_MSGTIMER
         call timer_dec
         ret nz
         call clear_messages
         ld hl,0FFFFh
         ld (W_MSGTIMER),hl
+        ret
+
+; ------------------------------------------------------------
+; 行 9-13 (メッセージ領域) の PCG 属性を一括表示 OFF
+; 入力: なし / 出力: 0DC00h+9*40 から 200 セルを 00h へ
+; 破壊: A, BC, DE, HL, F
+; ------------------------------------------------------------
+msgs_attr_off:
+        ld hl,0DC00h + 9*40
+        ld de,0DC01h + 9*40
+        ld bc,200
+        ld (hl),0
+        ldir
+        ret
+; ------------------------------------------------------------
+; アイテム名メッセージ表示 (行 8 中央)
+; 入力: HL = 文字列 (0FFh 終端)
+; 出力: 行 8 中央に表示 + W_ITMTIMER = ITEMMSG_FRAMES
+;       (メインメッセージ領域 行 9-13 とは別行のため重ならない)
+; 破壊: A, C, DE, HL, F
+; ------------------------------------------------------------
+show_item_msg:
+        push hl
+        ld c,8
+        call show_msg
+        pop hl
+        ld a,ITEMMSG_FRAMES
+        ld (W_ITMTIMER),a
+        ret
+
+; ------------------------------------------------------------
+; アイテム名メッセージタイマ更新 (0 で行 8 を消去)
+; 入力: なし
+; 出力: W_ITMTIMER > 0 なら -1, 0 到達フレームで行 8 を空白化
+; 破壊: A, B, HL, F
+; ------------------------------------------------------------
+itemmsg_update:
+        ld a,(W_ITMTIMER)
+        or a
+        ret z                           ; 非表示
+        push af
+        ld c,8
+        call msg_attr_off               ; 表示中は行 8 属性 OFF を再 assert
+        pop af
+        dec a
+        ld (W_ITMTIMER),a
+        ret nz
+        ; 表示時間が尽きた → 行 8 を消去
+        ld b,33
+        ld hl,VRAM_TEXT + 8*40 + 4
+IM_CLR: ld (hl),0
+        inc hl
+        djnz IM_CLR
+        ; 行 8 の PCG 属性を表示 ON へ戻す
+        ld hl,0DC00h + 8*40
+        ld c,40
+IM_A:   ld (hl),PCGATTR_BANK0
+        inc hl
+        dec c
+        jr nz,IM_A
+        ret
+; ------------------------------------------------------------
+; メッセージ行の PCG 属性を表示 OFF (テキストを前面に見せる)
+; 入力: C = 行番号
+; 出力: 0DC00h + 40*行 から 40 セルの PCG 属性を 00h (表示 OFF) へ
+;       (PCG が前面のため, 属性を切らないとテキスト レイヤの
+;        メッセージが地形に隠れて見えない。復帰は clear_messages /
+;        itemmsg_update が行う)
+; 破壊: A, C, DE, HL, F
+; ------------------------------------------------------------
+msg_attr_off:
+        ld l,c
+        ld h,0
+        add hl,hl                       ; 2r
+        push hl
+        add hl,hl
+        add hl,hl                       ; 8r
+        ld e,l
+        ld d,h                          ; DE = 8r
+        pop hl                          ; 2r
+        add hl,hl
+        add hl,hl
+        add hl,hl
+        add hl,hl                       ; 32r
+        add hl,de                       ; 40r
+        ld de,0DC00h
+        add hl,de                       ; HL = PCG 属性の行先頭
+        ld c,40
+MAO_L:  ld (hl),0
+        inc hl
+        dec c
+        jr nz,MAO_L
         ret

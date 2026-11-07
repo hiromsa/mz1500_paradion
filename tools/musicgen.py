@@ -1,4 +1,40 @@
 """Generate original three-voice PSG music for Makyou Kishi Paradion."""
+
+# =========================================================================
+# ■ このスクリプトに音楽を仕込む人 (別 AI) へのルール
+# =========================================================================
+# [出力]
+# - 生成物は src/sideb/sound_data.asm (直接編集しないこと。このスクリプトが上書きする)
+# - ビルド (build.ps1) が毎回 python tools/musicgen.py を実行する
+#
+# [必須ラベルと使われ方] (src/sideb/data.asm STAGE_TABLE / stage.asm が dw 参照)
+#   BGM_FIELD1 : Stage 1 (魔界の森) 道中曲
+#   BGM_ROCK   : Stage 2 (荒涼たる岩場) 道中曲
+#   BGM_FIELD2 : Stage 3-5 (墓地 / 火山 / 幻魔城) 道中曲
+#   BGM_BOSS   : ボス戦曲 (全ステージ共通)
+#   BGM_CLEAR  : ステージクリア / エンディング (BGM_END は BGM_CLEAR への別名)
+#   SE_SHOT / SE_EXPL / SE_PWUP : 効果音 (SE_DATA に生 db で記述)
+#   ★ラベル名を変えたり削除しないこと。アセンブルが壊れる。
+#
+# [SCORES の書き方]
+#   "ラベル": {
+#       "title": ..., "ticks": 1 音符のフレーム数 (15=120BPM, 12=150BPM, 10=180BPM),
+#       "lead" / "harmony" / "bass": 空白区切りの音符列 (3 声は同長,
+#           音名は C4..B8, # は半音上げ, 休符は "-"),
+#       "drums": ノイズを鳴らす音符インデックスのタプル,
+#       "lead_volume" / "harmony_volume" / "bass_volume" / "drum_volume":
+#           PSG 音量 0-15 (★小さいほど大きい。0=最大, 0Fh=消音),
+#       "durations": (省略可) 音符毎の長さを個別指定するタプル
+#   }
+# - PSG は E9h への書込みで L/R 同時に出る。3 矩形波 + ノイズの 4ch 構成
+# - 1 エントリ = [継続フレーム数][書込みバイト数][PSG バイト列...]、
+#   末尾の db 0FFh がループ点 (V_BGM_LOOP) になる。曲は必ずループさせること
+# - 音域目安: lead C5-C6 / harmony G3-G5 / bass A2-G3 (SN76489 の分周は 12bit)
+#
+# [SE_DATA の書き方]
+#   1 tick 毎に 1 エントリ ([バイト数][PSG バイト列...]) を消費, db 0 = 終端
+#   音量レジスタは ch0=90h / ch1=B0h / ch2=D0h / ノイズ=F0h
+# =========================================================================
 from pathlib import Path
 import re
 

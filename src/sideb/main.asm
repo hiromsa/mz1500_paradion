@@ -9,7 +9,7 @@
 ;   player.asm  自機 (移動 / 発射 / 被弾)
 ;   shot.asm    自弾 / 敵弾
 ;   enemy.asm   敵移動 / スポーン / 撃破
-;   item.asm    パワーアップ
+;   item.asm    パワーアップ / 宝箱
 ;   fx.asm      爆発
 ;   boss.asm    ボス
 ;   collide.asm 当たり判定
@@ -73,7 +73,7 @@ defc W_SCRATCH2 = WORK_BOTTOM + 03Eh   ; 2B 一時座標 (x2,y)
 ; オブジェクトテーブル: 20 スロット x 8 バイト
 ;  +0 状態(0=空) +1 attr(bit0=anim bit1=1x1) +2 x +3 y +4 code +5 t +6/7 描画セル
 defc O_TBL = WORK_BOTTOM + 040h
-defc O_SLOTS = 20
+defc O_SLOTS = 21
 defc O_LEN = 8
 defc O_PLAYER = 0
 defc O_SHOTS = 1                    ; 1-4
@@ -81,7 +81,19 @@ defc O_ESHOTS = 5                    ; 5-8
 defc O_ENEMIES = 9                    ; 9-14
 defc O_PWUPS = 15                   ; 15-16
 defc O_EXPLS = 17                   ; 17-19
+defc O_CHEST = 20                   ; 20 宝箱 (1 個のみ)
 defc W_WORKTOP = O_TBL + O_SLOTS * O_LEN
+; ---- 拡張ワーク (サウンド変数 V_* の後ろ) ----
+defc W_SPAWNMAX = W_WORKTOP + 009h   ; 雑魚の同時出現上限 (= ステージ + 1)
+defc W_CHESTCNT = W_WORKTOP + 00Ah   ; 宝箱出現タイマ
+defc W_ITMTIMER = W_WORKTOP + 00Bh   ; アイテム名表示残りフレーム (0 = 非表示)
+defc W_FRESH = W_WORKTOP + 00Ch      ; 1 = ゲーム開始直後 (GAME START 表示用)
+; ---- ゲームバランス定数 ----
+defc CHEST_FIRST_DELAY = 240        ; ステージ開始から最初の宝箱まで (フレーム)
+defc CHEST_SPAWN_INT = 250          ; 宝箱の再出現間隔 (約 4 秒, 8bit 収まり)
+defc ITEMMSG_FRAMES = 90            ; アイテム名メッセージ表示時間 (1.5 秒)
+defc PLRINV_RESPAWN = 180           ; 復活後の無敵時間 (3 秒, 点滅)
+defc PLRINV_SHIELD = 60             ; シールド被弾時の無敵時間
 
 defc ST_FIELD = 0
 defc ST_BOSS = 1

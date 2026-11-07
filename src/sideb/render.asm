@@ -77,7 +77,16 @@ RO_D1:
         ld a,(ix+0)
         or a
         jr z,RO_DSKIP
-        ld a,(ix+3)
+        ; 自機 (スロット 0) は無敵中 4 フレーム毎に描画を止めて点滅させる
+        ld a,b
+        cp O_SLOTS                      ; ループ先頭 1 回 = 自機スロット?
+        jr nz,RO_DY
+        ld a,(W_PLRINV)
+        or a
+        jr z,RO_DY
+        and 4                           ; 4 フレーム周期で消灯
+        jr z,RO_DSKIP
+RO_DY:  ld a,(ix+3)
         cp 176                          ; y >= 176 は画面外
         jr nc,RO_DSKIP
         push bc                         ; ループカウンタ

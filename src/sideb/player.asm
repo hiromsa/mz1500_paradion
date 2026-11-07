@@ -98,20 +98,36 @@ player_try_fire:
         jp player_fire
 
 ; ------------------------------------------------------------
-; 機体パターン更新 (水平位相 4 相)
+; 機体パターン更新 (歩行アニメ 2 フレーム x 水平位相 4 相)
 ; 入力: なし
-; 出力: 自機スロット +4 = SP_SHIP0 + (x2 & 3) * 4
-; 破壊: A, IX, F
+; 出力: 自機スロット +4 = SP_SHIP0 + 歩行フレーム * 16 + (x2 & 3) * 4
+;       歩行フレームは W_TICK の bit4 (16 フレーム周期) で 2 パターン切替
+;       → 前進している見た目の歩行アニメになる
+; 破壊: A, E, IX, F
 ; 注意: player_fire は IX を弾スロットへ奪うため、ここで必ず
 ;       自機スロットを再ロードする (旧実装は奪われた IX のまま
 ;       書き込むため発射した弾のコードを壊していた)
 ; ------------------------------------------------------------
 player_set_pattern:
         ld ix,O_TBL
+        ; 歩行フレーム = (W_TICK >> 4) & 1 → 0 か 16
+        ld a,(W_TICK)
+        srl a
+        srl a
+        srl a
+        srl a
+        and 1
+        add a,a
+        add a,a
+        add a,a
+        add a,a                         ; E = フレーム差分 (0 / 16)
+        ld e,a
+        ; 水平位相 = x2 下位 2bit → 位相 * 4
         ld a,(ix+2)
         and 3
         add a,a
-        add a,a
+        add a,a                         ; 位相 * 4
+        add a,e
         add a,SP_SHIP0
         ld (ix+4),a
         ret
@@ -193,7 +209,7 @@ init_shot_slot:
 ; ------------------------------------------------------------
 ; 被弾処理
 ; 入力: なし
-; 出力: シールド保持時 → シールド解除 + 60f 無敵
+; 出力: シールド保持時 → シールド解除 + PLRINV_SHIELD 無敵
 ;       それ以外 → 死亡処理 (自機消滅, パワーアップ全喪失, 爆発 + SE,
 ;       W_PREVSTATE 退避, W_STATE = ST_DEATH, 残機 -1, W_STATDIRTY = 1,
 ;       死亡待ちタイマ 120f, ハイスコア判定)
@@ -208,7 +224,7 @@ hit_player:
         jr z,HP_DIE
         xor a
         ld (W_PLRSHIELD),a
-        ld a,60
+        ld a,PLRINV_SHIELD
         ld (W_PLRINV),a
         ret
 HP_DIE:

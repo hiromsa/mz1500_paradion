@@ -279,3 +279,92 @@ ERASEATTR2X2:
         inc hl
         ld (hl),PCGATTR_BANK0
         ret
+; ------------------------------------------------------------
+; スプライト PCG の透過色 (黒) をフィールド色へ一括置換
+; 入力: A = フィールド色 (PCG 3bit, STAGE_TABLE +F)
+; 出力: SPRC_TBL の各範囲 (バンク 1-3) について 3 プレーン全 0 の
+;       ピクセルを A 色へ書換え, 終了時に D000h-EFFFh を VRAM & I/O へ戻す
+; 破壊: A, B, D, E, IX, F (C, HL は保存)
+; 注意: OUT E5h 選択中は VRAM/MMIO (E002 の V-BLANK 読み含む) が
+;       見えないため, init_stage の
+;       VRAM 転送完了直後 (描画 / メッセージの前) に 1 回だけ呼ぶこと
+;       (約 0.5 秒かかるためステージ切替時の一瞬の静止になる)
+; ------------------------------------------------------------
+sprite_recolor_field:
+        ld c,a                          ; C = フィールド色
+        ld hl,SPRC_TBL
+SRF_BANK:
+        ld a,(hl)
+        or a
+        jr z,SRF_DONE                   ; 終端 (bank = 0)
+        push hl                         ; テーブル位置退避
+        inc hl
+        ld e,(hl)                       ; 開始コード
+        inc hl
+        ld b,(hl)                       ; コード数
+        add a,a
+        add a,a
+        add a,a                         ; bank * 8
+        ld h,a
+        ld l,0                          ; HL = bank * 800h
+        ld d,0                          ; DE = 開始コード
+        sla e
+        rl d
+        sla e
+        rl d
+        sla e
+        rl d                            ; DE = 開始コード * 8
+        add hl,de
+        ld de,0D000h
+        add hl,de                       ; HL = PCG ウィンドウ上の開始アドレス
+        push hl
+        pop ix                          ; IX = 走査位置
+        pop hl                          ; テーブル位置 (bank バイト) へ戻す
+        inc hl
+        inc hl
+        inc hl                          ; 次のエントリ (bank) へ
+SRF_CODE:
+        push bc
+        ld d,8                          ; 1 文字 = 8 行
+SRF_ROW:
+        ld a,001h
+        out (PORT_PCG_B),a              ; B プレーン選択
+        ld e,(ix+0)
+        ld a,002h
+        out (PORT_PCG_B),a              ; R プレーン選択
+        ld a,(ix+0)
+        or e                            ; B|R
+        ld e,a
+        ld a,003h
+        out (PORT_PCG_B),a              ; G プレーン選択
+        ld a,(ix+0)
+        or e                            ; B|R|G
+        jr nz,SRF_NROW                  ; 黒でなければ次の行へ
+        ; 3 プレーン全 0 (黒) → フィールド色の立っているプレーンだけ FFh
+        bit 0,c
+        jr z,SRF_W1
+        ld a,001h
+        out (PORT_PCG_B),a
+        ld (ix+0),0FFh
+SRF_W1: bit 1,c
+        jr z,SRF_W2
+        ld a,002h
+        out (PORT_PCG_B),a
+        ld (ix+0),0FFh
+SRF_W2: bit 2,c
+        jr z,SRF_NROW
+        ld a,003h
+        out (PORT_PCG_B),a
+        ld (ix+0),0FFh
+SRF_NROW:
+        inc ix
+        dec d
+        jr nz,SRF_ROW
+        pop bc
+        dec b
+        jr nz,SRF_CODE
+        jr SRF_BANK
+SRF_DONE:
+        out (PORT_PCG_OFF),a            ; PCG モード解除 (E6h)
+        out (PORT_VRAM),a               ; D000h-EFFFh を VRAM & I/O へ戻す
+        ret

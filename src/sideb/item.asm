@@ -1,9 +1,9 @@
 ; ============================================================
-; パワーアップ: 落下 / 取得判定 / 効果適用
+; パワーアップ / 宝箱: 落下 / 取得判定 / 効果適用 / 宝箱出現・破壊
 ; ============================================================
 
 ; ------------------------------------------------------------
-; パワーアップ更新 (スロット O_PWUPS..+1)
+; パワーアップ更新 (スロット O_PWUPS..+1, 16x16 スプライト)
 ; 入力: なし
 ; 出力: 落下 y +2 (y >= 176 で消滅), 自機接触で効果適用後消滅
 ; 破壊: A, B, D, IX, F
@@ -19,21 +19,21 @@ PUW_L:  ld a,(ix+0)
         cp 176
         jr nc,PUW_KILL
         ld (ix+3),a
-        ; 自機との接触 (|dx| < 5 かつ |dy| < 12)
+        ; 自機との接触 (16x16 同士: |dx| < 8 かつ |dy| < 14)
         ; ※B はループカウンタのため一時値には D を使う
         ld d,(ix+2)
         ld a,(O_TBL+2)
         sub d
         jr nc,PUW_AX
         neg
-PUW_AX: cp 5
+PUW_AX: cp 8
         jr nc,PUW_N
         ld d,(ix+3)
         ld a,(O_TBL+3)
         sub d
         jr nc,PUW_AY
         neg
-PUW_AY: cp 12
+PUW_AY: cp 14
         jr nc,PUW_N
         ld a,(ix+4)
         push af                         ; コード退避 (A は下で潰れる)
@@ -54,33 +54,189 @@ PUW_N:  ld de,O_LEN
 ; パワーアップ効果適用
 ; 入力: A = パワーアップコード (SP_PW_xxx)
 ; 出力: コードに応じ W_PLRTWIN / W_PLRSPD / W_PLRSHIELD / W_LIVES を
-;       更新 (1UP は上限 6) + SE(パワーアップ) 再生
-; 破壊: A, DE, F (B は保存 → ループカウンタに影響しない)
+;       更新 (1UP は上限 6) + アイテム名を画面中央 (行 8) に表示 +
+;       SE(パワーアップ) 再生
+; 破壊: A, DE, HL, F (B は保存 → ループカウンタに影響しない)
 ; ------------------------------------------------------------
 pwup_apply:
         cp SP_PW_TWIN
         jr nz,PWU_S2
         ld a,1
         ld (W_PLRTWIN),a
-        jr PWU_SE
+        ld hl,MSG_ITWIN                 ; "TWIN SHOT"
+        jr PWU_MSG
 PWU_S2: cp SP_PW_SPEED
         jr nz,PWU_S3
         ld a,4
         ld (W_PLRSPD),a
-        jr PWU_SE
+        ld hl,MSG_ISPEED                ; "SPEED UP"
+        jr PWU_MSG
 PWU_S3: cp SP_PW_SHIELD
         jr nz,PWU_S4
         ld a,1
         ld (W_PLRSHIELD),a
-        jr PWU_SE
+        ld hl,MSG_ISHIELD               ; "SHIELD"
+        jr PWU_MSG
 PWU_S4: cp SP_PW_LIFE
-        ret nz
+        jr nz,PWU_RET
         ld a,(W_LIVES)
         cp 6
-        jr nc,PWU_SE
+        jr nc,PWU_MSG                   ; 上限 6 → 加算せず表示だけ
         inc a
         ld (W_LIVES),a
         ld a,1
         ld (W_STATDIRTY),a
-PWU_SE: ld de,SE_PWUP
+        ld hl,MSG_ILIFE                 ; "1 UP"
+PWU_MSG:
+        call show_item_msg
+        ld de,SE_PWUP
         jp play_se
+PWU_RET:
+        ret
+
+; ------------------------------------------------------------
+; 宝箱更新 (スロット O_CHEST, 16x16)
+; 入力: なし
+; 出力: W_CHESTCNT 減算, 0 で空いていれば宝箱を上から出現させる。
+;       出現中は敵と同じ速度 (75%) で降下し, y >= 168 で消滅
+; 破壊: A, B, DE, IX, F
+; ------------------------------------------------------------
+chest_update:
+        ; 出現タイマ
+        ld a,(W_CHESTCNT)
+        or a
+        jr z,CU_SPAWN
+        dec a
+        ld (W_CHESTCNT),a
+        jr CU_MOVE
+CU_SPAWN:
+        ld a,CHEST_SPAWN_INT
+        ld (W_CHESTCNT),a
+        ld a,O_CHEST
+        ld b,1
+        call FIND_SLOT
+        ret c                           ; 既に宝箱が出ている
+        call rand8
+        and 1Fh
+        add a,a
+        add a,a
+        add a,8                         ; x2 = (乱数 & 1Fh) * 4 + 8
+        ld (ix+2),a
+        xor a
+        ld (ix+3),a                     ; y = 0
+        ld (ix+5),a
+        ld a,1
+        ld (ix+0),a
+        ld a,PCGATTR_BANK2
+        ld (ix+1),a                     ; バンク2, アニメなし
+        ld a,SP_CHEST
+        ld (ix+4),a
+        ; +6/+7 (描画済みセル) は消去パスが管理するのでここでは触らない
+CU_MOVE:
+        ld a,(O_TBL + O_CHEST*O_LEN + 0)
+        or a
+        ret z                           ; 未出現 (タイマ経過のみのフレーム)
+        ld ix,O_TBL + O_CHEST*O_LEN     ; IX をここで確定
+        inc (ix+5)
+        ld a,(ix+5)
+        and 3
+        cp 3
+        ret z                           ; 移動スキップフレーム (速度 75%)
+        ld a,(ix+3)
+        inc a
+        cp 168
+        jr nc,CU_KILL                   ; 画面下へ抜けたら取り逃し
+        ld (ix+3),a
+        ret
+CU_KILL:
+        xor a
+        ld (ix+0),a
+        ret
+
+; ------------------------------------------------------------
+; 自弾 × 宝箱
+; 入力: なし
+; 出力: 命中弾消滅 + chest_open (宝箱破壊 → 爆発 + アイテム出現)
+; 破壊: A, B, DE, IX, F
+; ------------------------------------------------------------
+shots_vs_chest:
+        ld a,(O_TBL + O_CHEST*O_LEN + 0)
+        or a
+        ret z                           ; 宝箱未出現
+        ld ix,O_TBL + O_SHOTS*O_LEN
+        ld b,4
+SVC_L:  push bc
+        push ix
+        ld a,(ix+0)
+        or a
+        jr z,SVC_N
+        ; |dx| < 8 (16x16 宝箱の横幅)
+        ld a,(ix+2)
+        ld e,a
+        ld a,(O_TBL + O_CHEST*O_LEN + 2)
+        sub e
+        jr nc,SVC_A1
+        neg
+SVC_A1: cp 8
+        jr nc,SVC_N
+        ; |dy| < 16 (宝箱の縦幅)
+        ld a,(ix+3)
+        ld e,a
+        ld a,(O_TBL + O_CHEST*O_LEN + 3)
+        sub e
+        jr nc,SVC_A2
+        neg
+SVC_A2: cp 16
+        jr nc,SVC_N
+        xor a
+        ld (ix+0),a                     ; 弾消滅
+        call chest_open
+SVC_N:  pop ix
+        pop bc
+        ld de,O_LEN
+        add ix,de
+        djnz SVC_L
+        ret
+
+; ------------------------------------------------------------
+; 宝箱を開ける (破壊処理)
+; 入力: なし
+; 出力: 宝箱消滅 + 爆発 + SE + 200 点 + ランダムなパワーアップ出現
+; 破壊: A, B, DE, IX, F
+; ------------------------------------------------------------
+chest_open:
+        ld a,(O_TBL + O_CHEST*O_LEN + 2)
+        ld (W_SCRATCH2),a               ; 宝箱 x2
+        ld a,(O_TBL + O_CHEST*O_LEN + 3)
+        ld (W_SCRATCH2+1),a             ; 宝箱 y
+        xor a
+        ld (O_TBL + O_CHEST*O_LEN + 0),a ; 宝箱消滅
+        call spawn_expl_scratch
+        ld de,0200h
+        call add_score                  ; 宝箱 200 点
+        ld de,(W_SEEXPL)
+        call play_se
+        ; 空きパワーアップスロットへランダムなアイテムを出す
+        ld a,O_PWUPS
+        ld b,2
+        call FIND_SLOT
+        ret c
+        ld a,1
+        ld (ix+0),a
+        ld a,PCGATTR_BANK1
+        ld (ix+1),a                     ; バンク1, 16x16
+        ld a,(W_SCRATCH2)
+        ld (ix+2),a
+        ld a,(W_SCRATCH2+1)
+        ld (ix+3),a
+        call rand8
+        and 3
+        ld hl,PWUP_TBL
+        ld e,a
+        ld d,0
+        add hl,de
+        ld a,(hl)
+        ld (ix+4),a
+        ld (ix+5),0
+        ; +6/+7 (描画済みセル) は消去パスが管理するのでここでは触らない
+        ret

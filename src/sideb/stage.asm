@@ -70,8 +70,18 @@ init_stage:
         inc hl
         ld d,(hl)                       ; +D/E: SE(爆発)
         ld (W_SEEXPL),de
+        inc hl
+        ld a,(hl)                       ; +F: フィールド色 (スプライト黒の置換色)
+        push af                         ; sprite_recolor_field まで退避
         xor a
         ld (W_MAPROW),a
+        ; 雑魚の同時出現上限 = ステージ + 1, 宝箱タイマ初期化
+        ld a,(W_STAGE)
+        inc a
+        ld (W_SPAWNMAX),a
+        ld a,CHEST_FIRST_DELAY
+        ld (W_CHESTCNT),a
+        xor a                           ; ↓ BOSSMODE=0 用に A を戻す
         ld (W_BOSSMODE),a
         ld hl,W_BOSS
         ld de,W_BOSS+1
@@ -108,6 +118,10 @@ IS_PF:
         ld bc,FIELD_BYTES-1
         ld (hl),PCGATTR_BANK0
         ldir
+        ; スプライトの透過色 (黒) をこの面のフィールド色へ一括置換
+        ; (OUT E5h で PCG ウィンドウへ切替るため VRAM アクセスの前に実施)
+        pop af
+        call sprite_recolor_field
         ; 自機初期配置 (スロット 0)
         ld ix,O_TBL
         ld a,1
@@ -125,7 +139,15 @@ IS_PF:
         ld (ix+7),0
         ld a,1
         ld (W_STATDIRTY),a
-        ; "STAGE n" バナー表示
+        ; 開始メッセージ: ゲーム起動直後は "GAME START", それ以外は "STAGE n"
+        ld a,(W_FRESH)
+        or a
+        jr z,IS_STGMSG
+        xor a
+        ld (W_FRESH),a
+        ld hl,MSG_START
+        jr IS_MSG
+IS_STGMSG:
         ld a,(W_STAGE)
         dec a
         ld hl,STAGE_MSGS
@@ -137,6 +159,7 @@ IS_PF:
         inc hl
         ld d,(hl)
         ex de,hl
+IS_MSG:
         ld c,10
         call show_msg
         ld hl,180
@@ -170,7 +193,14 @@ stage_flow:
         ld (W_BOSS+2),a
         xor a
         ld (W_BOSS+3),a                 ; y=0 (上から降下)
-        ld a,SP_BOSS_F1
+        ; ステージ毎のボス PCG 先頭コード (BOSS_CODE_TBL) を設定
+        ld a,(W_STAGE)
+        dec a
+        ld hl,BOSS_CODE_TBL
+        ld e,a
+        ld d,0
+        add hl,de
+        ld a,(hl)
         ld (W_BOSS+4),a
         xor a
         ld (W_BOSS+5),a

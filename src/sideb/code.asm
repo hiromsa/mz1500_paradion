@@ -50,6 +50,9 @@ game_init:
         ld (W_KEYS_PREV),a
         ld (W_RAND),a
         ld (W_RAND+1),a
+        ld (W_ITMTIMER),a               ; アイテム名メッセージ非表示
+        ld a,1
+        ld (W_FRESH),a                  ; 次の init_stage は "GAME START" 表示
         ld a,2
         ld (W_PLRSPD),a
         ; オブジェクトテーブルクリア

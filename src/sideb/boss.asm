@@ -122,7 +122,7 @@ boss_move_fight:
         jr nc,BMF_FIRE
         ld a,2
         ld (W_BOSSMODE),a
-        ld a,SP_BOSS2_F1
+        ld a,SP_BOSS5B_0                ; ボス 5 形態 2 の PCG 先頭
         ld (W_BOSS+4),a
         ld a,(W_BOSSFIREINT)
         sub 15

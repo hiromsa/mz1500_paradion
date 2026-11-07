@@ -34,6 +34,7 @@ GK_FIELD:
         call player_update
         call scroll_logic
         call spawn_update
+        call chest_update               ; 宝箱の出現 / 降下
         call shots_update
         call eshots_update
         call enemies_update
@@ -42,6 +43,7 @@ GK_FIELD:
         call collide_field
         call stage_flow
         call msgs_update
+        call itemmsg_update             ; アイテム名表示の消去タイマ
         ret
 
 ; ------------------------------------------------------------
@@ -55,11 +57,13 @@ GK_BOSS:
         call shots_update
         call eshots_update
         call enemies_update
+        call chest_update
         call pwups_update
         call expls_update
         call boss_update
         call collide_boss
         call msgs_update
+        call itemmsg_update
         ret
 
 ; ------------------------------------------------------------
@@ -74,6 +78,8 @@ GK_CLEAR:
         call shots_update
         call expls_update
         call pwups_update
+        call chest_update
+        call itemmsg_update
         ld hl,W_MSGTIMER
         call timer_dec
         ret nz
@@ -127,9 +133,14 @@ GK_DEATH:
         ld (ix+5),a
         ld (ix+6),a                     ; 描画済みセルなし (消去パス対象外)
         ld (ix+7),a
-        ld a,60
-        ld (W_PLRINV),a
+        ld a,PLRINV_RESPAWN
+        ld (W_PLRINV),a                 ; 復活後 3 秒の無敵 (自機点滅)
         call clear_messages
+        ld hl,MSG_READY
+        ld c,10
+        call show_msg                   ; "READY" を画面中央へ
+        ld hl,120
+        ld (W_MSGTIMER),hl
         ret
 GKD_OVER:
         call hiscore_check
@@ -176,6 +187,7 @@ GK_GAMEOVER:
 ; ------------------------------------------------------------
 GK_ENDING:
         call msgs_update
+        call itemmsg_update
         ld a,(W_KEYS)
         bit 5,a                         ; CR → タイトル戻り (再スタート)
         ret z

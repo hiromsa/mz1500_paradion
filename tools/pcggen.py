@@ -9,6 +9,60 @@ and emits:
 Color characters: '.'/'K'=black(0) B=blue(1) R=red(2) M=magenta(3) G=green(4)
                   C=cyan(5) Y=yellow(6) W=white(7)
 Usage: python tools/pcggen.py   (run from project root)
+
+=========================================================================
+■ このスクリプトにグラフィック / マップを仕込む人 (別 AI) へのルール
+=========================================================================
+
+[基本]
+- 絵はすべて 8x8 (Bank.put) か 16x16 (Bank.put16 / center16 + put16) か
+  32x32 (center32 + put32) の ASCII 文字列で書く。1 文字 = 1 ピクセル。
+- 色文字: '.' または 'K' = 黒(0), B=青(1), R=赤(2), M=マゼンタ(3),
+  G=緑(4), C=シアン(5), Y=黄(6), W=白(7)。
+- ★黒 ('.'/ 'K') は「透過色」として扱われる。init_stage が実行時に
+  バンク 1-3 の黒ピクセルをステージ毎のフィールド色へ一括置換するため、
+  キャラクタの輪郭や内部の塗りを黒に頼らないこと (黒は必ず背景に溶ける)。
+- スプライトは横移動の位相が 2px 刻みのため、自機のように水平方向に
+  動くものは shift16() でシフト済み 4 相を焼くこと (bank1 の自機を参照)。
+
+[バンク割当 (pcgmap.inc の defc と一致させること)]
+- bank0 = 地形タイル / 数字 / UI:
+    16x16 タイル 1 種 = コード 4 個 (左上 = TERRAIN_TILES のコード)。
+    ステージ 1-5 の 6 種 x 5 面 = 80h-F7h。下 2bit は (cy*2+cx)。
+    ★「壊せるタイル」のコード (94h, ACh, C4h, DCh, F4h) は変更禁止 —
+      src/sideb/data.asm BRK_TABLE と不変の対応がある。
+    50h-59h = 数字 0-9, 5Ah = ハート (残機)。
+- bank1 = 自機 / 弾 / 爆発 / アイテム:
+    00h-0Fh = 自機 歩行フレーム A (phase0-3, 各 4 コード)
+    10h-1Fh = 自機 歩行フレーム B (同構成、player.asm が 16 フレーム毎に A/B 切替)
+    20h = 自弾, 21h = 敵弾 (8x8)
+    22h, 26h, 2Ah, 2Eh = 爆発 4 フレーム (16x16)
+    32h = ツインショット, 36h = スピードアップ, 3Ah = シールド,
+    3Eh = 1UP (16x16 アイテム。種類が見分けられる絵にすること)
+- bank2 = 雑魚敵 6 種 + 宝箱:
+    種 N (1-6) の先頭コード = 8 * (N-1)。各種 2 フレーム (+0 と +4)。
+    種 1-2 が出題意の基本敵 (ガーゴイル / ウィスプ)、3 以降はステージ 2-5 で
+    新規登場する雑魚。種の奇偶で移動パターンが決まる
+    (奇数 = ガーゴイル型, 偶数 = ウィスプ型 — src/sideb/enemy.asm)。
+    30h = 宝箱 (16x16, アニメなし)。弾を当てるとアイテムを出す。
+    ★アイテム持ち敵 (メダル差分) は廃止済み。不要。
+- bank3 = ボス 5 種 (32x32, フレーム差分 = +10h):
+    00h/10h = ボス 1 (トレント), 40h/50h = ボス 2 (ゴーレム),
+    80h/90h = ボス 3 (デスサイズ), C0h/D0h = ボス 4 (ファイアドラゴン),
+    20h/30h = ボス 5 形態 1 (ダークロード), A0h/B0h = ボス 5 形態 2。
+    コード対応表は src/sideb/data.asm BOSS_CODE_TBL が参照する。
+
+[マップ (MAP_ROWS)]
+- 各ステージ = 20 文字 x 11 行の固定レイアウト。1 文字 = 16x16 タイル 1 個。
+- glyph -> タイルの対応は MAP_GLYPHS、コード割当は TERRAIN_TILES で定義する。
+- 各マップには必ず地形の目印 (川 / 溶岩 / 堀などの帯 + 橋) を含めること。
+- 'b' (breakable) は壊せるタイル。コード変更禁止 (前述)。
+- マップの地面タイルの主色が、そのステージのフィールド色になる
+  (黒置換色: 1=森の緑, 2=岩場の青灰... ではなく data.asm STAGE_TABLE +F 参照。
+   タイルの主色と +F の色を合わせるとキャラが自然に馴染む)。
+- 生成物を直接編集しないこと (pcg_data.asm / pcgmap.inc / map_data.asm は
+  すべてこのスクリプトが上書きする)。絵・マップはこのファイルだけ編集する。
+=========================================================================
 """
 import os
 
@@ -208,13 +262,17 @@ b0.put(0x5A, [  # heart (REST icon)
     "........", ".RR..RR.", "RRRRRRRR", "RRRRRRRR",
     "RRRRRRRR", ".RRRRRR.", "..RRRR..", "....RR.."])
 
-# ---------------------------------------------------------------- bank 1: player
+# ---------------------------------------------------------------- bank 1: player / shots / items
 b1 = Bank()
 def center16(rows):
     """Center variable-width pixel-art rows in a transparent 16px cell."""
     assert len(rows) == 16
     assert all(len(row) <= 16 for row in rows), [(row, len(row)) for row in rows if len(row) > 16]
     return [row.center(16, '.') for row in rows]
+
+def swap_colors(rows, mapping):
+    """Placeholder art helper: remap palette letters in every row."""
+    return ["".join(mapping.get(ch, ch) for ch in row) for row in rows]
 
 PALADIN = center16([
     "Y",                    # crest
@@ -234,11 +292,21 @@ PALADIN = center16([
     ".....C....C.....",
     "....YY....YY....",     # boots
 ])
-b1.put16(0x00, PALADIN)       # phase 0 (shift 0)
-b1.shift16(0x00, 0x04, 2)     # phase 1 (shift 2px)
-b1.shift16(0x00, 0x08, 4)     # phase 2 (shift 4px)
-b1.shift16(0x00, 0x0C, 6)     # phase 3 (shift 6px)
-b1.put(0x10, [  # player shot
+# 自機は後ろ姿。歩行アニメ 2 フレーム x 水平シフト 4 相
+#   フレーム A = 0x00-0x0F, フレーム B = 0x10-0x1F (player.asm が 16 フレーム毎に切替)
+PALADIN_WALK = PALADIN[:14] + [
+    ".....C...C......",       # 軸足
+    "...YY......YY...",       # 歩行フレーム B: 脚を開く
+]
+b1.put16(0x00, PALADIN)       # walk A phase 0 (shift 0)
+b1.shift16(0x00, 0x04, 2)     # walk A phase 1 (shift 2px)
+b1.shift16(0x00, 0x08, 4)     # walk A phase 2 (shift 4px)
+b1.shift16(0x00, 0x0C, 6)     # walk A phase 3 (shift 6px)
+b1.put16(0x10, PALADIN_WALK)  # walk B phase 0
+b1.shift16(0x10, 0x14, 2)     # walk B phase 1
+b1.shift16(0x10, 0x18, 4)     # walk B phase 2
+b1.shift16(0x10, 0x1C, 6)     # walk B phase 3
+b1.put(0x20, [  # player shot
     "...WW...", "..WWWW..", "..WKKW..", "..WWWW..",
     "...WW...", "...WW...", "........", "........"])
 b1.put(0x11, [  # enemy shot
@@ -258,21 +326,29 @@ for f, art in enumerate(EXPL8):
     art = [r.replace('y', 'Y') for r in art]
     art16 = [row + row[::-1] for row in art]      # mirror columns
     art16 = [row for row in art16 for _ in range(2)]  # double rows
-    b1.put16(0x12 + f * 4, art16)
-b1.put(0x22, [  # powerup: TWIN
+    b1.put16(0x22 + f * 4, art16)
+PW_TWIN8 = [
     "KKKKKKKK", "KCCCCCCK", "KC.WWW.K", "KC.WW..K",
-    "KC.WWWWK", "KC.W.W.K", "KCCCCCCK", "KKKKKKKK"])
-b1.put(0x23, [  # powerup: SPEED
+    "KC.WWWWK", "KC.W.W.K", "KCCCCCCK", "KKKKKKKK"]
+PW_SPEED8 = [
     "KKKKKKKK", "KGGGGGGK", "KG.WW..K", "KG.WW..K",
-    "KGWWWW.K", "KG..WW.K", "KGGGGGGK", "KKKKKKKK"])
-b1.put(0x24, [  # powerup: SHIELD
+    "KGWWWW.K", "KG..WW.K", "KGGGGGGK", "KKKKKKKK"]
+PW_SHIELD8 = [
     "KKKKKKKK", "KWWWWWWK", "KWCCCCWK", "KWC..CWK",
-    "KWC..CWK", "KWCCCCWK", "KWWWWWWK", "KKKKKKKK"])
-b1.put(0x25, [  # powerup: 1UP
+    "KWC..CWK", "KWCCCCWK", "KWWWWWWK", "KKKKKKKK"]
+PW_LIFE8 = [
     "KKKKKKKK", "KGGGGGGK", "KGRRRRGK", "KGRGGKGK",
-    "KGRGGGGK", "KGGRRGGK", "KGGGGGGK", "KKKKKKKK"])
+    "KGRGGGGK", "KGGRRGGK", "KGGGGGGK", "KKKKKKKK"]
+# アイテムは 16x16 (2 倍拡大)。種類が一見でわかる絵にすること
+b1.put16(0x32, scale2(PW_TWIN8))    # SP_PW_TWIN
+b1.put16(0x36, scale2(PW_SPEED8))   # SP_PW_SPEED
+b1.put16(0x3A, scale2(PW_SHIELD8))  # SP_PW_SHIELD
+b1.put16(0x3E, scale2(PW_LIFE8))    # SP_PW_LIFE
 
-# ---------------------------------------------------------------- bank 2: enemies
+# ---------------------------------------------------------------- bank 2: enemies / chest
+# 雑魚敵 6 種 (種 N の先頭コード = 8*(N-1), 2 フレーム = +0/+4) + 宝箱 0x30。
+# 種 3-6 は既存パターンの色替えコピー (プレースホルダー)。
+# 本グラフィックは別 AI がこのセクションを書き換える。
 b2 = Bank()
 GARGOYLE = center16([
     "M..............M",       # horns
@@ -312,19 +388,6 @@ GARGOYLE2 = center16([
 ])
 b2.put16(0x00, GARGOYLE)
 b2.put16(0x04, GARGOYLE2)
-
-def with_medallion(rows):
-    """Overlay a bright gold/red pickup emblem on a carrier variant."""
-    art = [list(row) for row in rows]
-    for y, mark in ((9, ".Y."), (10, "YRY"), (11, "YYY"), (12, ".Y.")):
-        x = (16 - len(mark)) // 2
-        art[y][x:x + len(mark)] = mark
-    return ["".join(row) for row in art]
-
-GARGOYLE_CARRY = with_medallion(GARGOYLE)
-GARGOYLE_CARRY2 = with_medallion(GARGOYLE2)
-b2.put16(0x10, GARGOYLE_CARRY)    # guaranteed item carrier
-b2.put16(0x14, GARGOYLE_CARRY2)
 WISP = center16([
     ".......C........",
     "......CWC.......",
@@ -363,12 +426,50 @@ WISP2 = center16([
 ])
 b2.put16(0x08, WISP)
 b2.put16(0x0C, WISP2)
-WISP_CARRY = with_medallion(WISP)
-WISP_CARRY2 = with_medallion(WISP2)
-b2.put16(0x18, WISP_CARRY)
-b2.put16(0x1C, WISP_CARRY2)
 
-# ---------------------------------------------------------------- bank 3: boss
+# ---- 種 3-6: プレースホルダー (既存パターンの色替えコピー) ----
+# 別 AI が本グラフィックに置き換える。移動パターンは種の奇偶で決まるため
+# 見た目だけを変えればよい。
+BAT     = swap_colors(GARGOYLE, {'W': 'C', 'M': 'B'})   # 種 3: 青のガーゴイル (岩場)
+BAT2    = swap_colors(GARGOYLE2, {'W': 'C', 'M': 'B'})
+WILLOW  = swap_colors(WISP, {'C': 'G'})                  # 種 4: 緑の鬼火 (墓地)
+WILLOW2 = swap_colors(WISP2, {'C': 'G'})
+EMBER   = swap_colors(WISP, {'W': 'Y', 'C': 'R'})        # 種 5: 炎の魂 (火山)
+EMBER2  = swap_colors(WISP2, {'W': 'Y', 'C': 'R'})
+SHADE   = swap_colors(GARGOYLE, {'W': 'Y', 'M': 'B'})   # 種 6: 金翼の怪 (幻魔城)
+SHADE2  = swap_colors(GARGOYLE2, {'W': 'Y', 'M': 'B'})
+b2.put16(0x10, BAT)
+b2.put16(0x14, BAT2)
+b2.put16(0x18, WILLOW)
+b2.put16(0x1C, WILLOW2)
+b2.put16(0x20, EMBER)
+b2.put16(0x24, EMBER2)
+b2.put16(0x28, SHADE)
+b2.put16(0x2C, SHADE2)
+
+# ---- 宝箱 (0x30, 16x16) ----
+# 弾を当てると爆発してアイテムを出す。木胴 + 金帯の意匠。
+CHEST = [
+    "................",
+    "..RRRRRRRRRRRR..",
+    ".RRRRRRRRRRRRRR.",
+    ".YYYYYYYYYYYYYY.",
+    ".RRRRRRRRRRRRRR.",
+    ".RRRRRRRRRRRRRR.",
+    ".YYYYYYWWYYYYYY.",
+    ".RRRRRRWWRRRRRR.",
+    ".RRRRRRRRRRRRRR.",
+    ".YYYYYYYYYYYYYY.",
+    ".RRRRRRRRRRRRRR.",
+    ".RRRRRRRRRRRRRR.",
+    ".YYYYYYYYYYYYYY.",
+    ".RRRRRRRRRRRRRR.",
+    "..RRRRRRRRRRRR..",
+    "................",
+]
+b2.put16(0x30, CHEST)
+
+# ---------------------------------------------------------------- bank 3: boss (5 種)
 b3 = Bank()
 TRENT = [  # 大樹の魔物トレント (32x32)
     "....gGGGGg......gGGGGg..........",
@@ -461,6 +562,29 @@ DARKLORD = center32([  # 幻魔王ダークロード: 冠・角・赤眼・紫�
 put32(b3, 0x20, DARKLORD)
 DARKLORD2 = DARKLORD[:9] + [r.replace('RR', 'YY') for r in DARKLORD[9:15]] + DARKLORD[15:]
 put32(b3, 0x30, DARKLORD2)
+
+# ---- ボス 2-4: プレースホルダー (既存パターンの色替えコピー) ----
+# 別 AI が本グラフィックに置き換える。データ側は data.asm BOSS_CODE_TBL が
+# ステージ番号 -> 先頭コードを引くだけで、ここ以外の変更は不要。
+GOLEM  = swap_colors(TRENT, {'g': 'b', 'G': 'B', 'R': 'Y', 'Y': 'W', 'M': 'C', 'm': 'c'})
+GOLEM2 = GOLEM[:3] + [r.replace('WW', 'KK') for r in GOLEM[3:]]     # 目を細める
+put32(b3, 0x40, GOLEM)    # ボス 2: ストーンゴーレム (岩場)
+put32(b3, 0x50, GOLEM2)
+DEATH  = swap_colors(DARKLORD, {'W': 'C', 'R': 'Y', 'M': 'B', 'Y': 'R', 'C': 'G'})
+DEATH2 = DEATH[:3] + [r.replace('YY', 'KK') for r in DEATH[3:]]     # 目を細める
+put32(b3, 0x80, DEATH)    # ボス 3: デスサイズ (墓地)
+put32(b3, 0x90, DEATH2)
+DRAGON  = swap_colors(TRENT, {'g': 'r', 'G': 'R', 'R': 'W', 'Y': 'C', 'M': 'Y', 'm': 'y'})
+DRAGON2 = DRAGON[:3] + [r.replace('CC', 'KK') for r in DRAGON[3:]]  # 目を細める
+put32(b3, 0xC0, DRAGON)   # ボス 4: ファイアドラゴン (火山)
+put32(b3, 0xD0, DRAGON2)
+
+# ---- ボス 5 形態 2 (0xA0/0xB0) ----
+# 白鎧と紫鎧を反転させた差分。形態変化は boss.asm がコード差し替えで表現する。
+DARKLORD_B = swap_colors(DARKLORD, {'W': 'M', 'M': 'W'})
+put32(b3, 0xA0, DARKLORD_B)
+DARKLORD_B2 = DARKLORD_B[:9] + [r.replace('RR', 'YY') for r in DARKLORD_B[9:15]] + DARKLORD_B[15:]
+put32(b3, 0xB0, DARKLORD_B2)
 
 BANKS = [b0, b1, b2, b3]
 
@@ -619,13 +743,20 @@ def emit_map_inc(path):
     lines.extend(['defc T_DIGIT0 = 50h', 'defc T_HEART = 5Ah', ''])
     names = {
         1: [('SP_SHIP0', 0x00), ('SP_SHIP1', 0x04), ('SP_SHIP2', 0x08), ('SP_SHIP3', 0x0C),
-            ('SP_SHOT', 0x10), ('SP_ESHOT', 0x11),
-            ('SP_EXPL0', 0x12), ('SP_EXPL1', 0x16), ('SP_EXPL2', 0x1A), ('SP_EXPL3', 0x1E),
-            ('SP_PW_TWIN', 0x22), ('SP_PW_SPEED', 0x23), ('SP_PW_SHIELD', 0x24), ('SP_PW_LIFE', 0x25)],
+            ('SP_SHIPB0', 0x10), ('SP_SHIPB1', 0x14), ('SP_SHIPB2', 0x18), ('SP_SHIPB3', 0x1C),
+            ('SP_SHOT', 0x20), ('SP_ESHOT', 0x21),
+            ('SP_EXPL0', 0x22), ('SP_EXPL1', 0x26), ('SP_EXPL2', 0x2A), ('SP_EXPL3', 0x2E),
+            ('SP_PW_TWIN', 0x32), ('SP_PW_SPEED', 0x36), ('SP_PW_SHIELD', 0x3A), ('SP_PW_LIFE', 0x3E)],
         2: [('SP_GARG0', 0x00), ('SP_GARG1', 0x04), ('SP_WISP0', 0x08), ('SP_WISP1', 0x0C),
-            ('SP_GARG_ITEM0', 0x10), ('SP_WISP_ITEM0', 0x18)],
-        3: [('SP_BOSS_F1', 0x00), ('SP_BOSS_F2', 0x10),
-            ('SP_BOSS2_F1', 0x20), ('SP_BOSS2_F2', 0x30)],
+            ('SP_EN3_0', 0x10), ('SP_EN3_1', 0x14), ('SP_EN4_0', 0x18), ('SP_EN4_1', 0x1C),
+            ('SP_EN5_0', 0x20), ('SP_EN5_1', 0x24), ('SP_EN6_0', 0x28), ('SP_EN6_1', 0x2C),
+            ('SP_CHEST', 0x30)],
+        3: [('SP_BOSS1_0', 0x00), ('SP_BOSS1_1', 0x10),
+            ('SP_BOSS2_0', 0x40), ('SP_BOSS2_1', 0x50),
+            ('SP_BOSS3_0', 0x80), ('SP_BOSS3_1', 0x90),
+            ('SP_BOSS4_0', 0xC0), ('SP_BOSS4_1', 0xD0),
+            ('SP_BOSS5_0', 0x20), ('SP_BOSS5_1', 0x30),
+            ('SP_BOSS5B_0', 0xA0), ('SP_BOSS5B_1', 0xB0)],
     }
     for bank, entries in names.items():
         lines.append(f'; --- bank {bank} ---')
