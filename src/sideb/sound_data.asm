@@ -4,188 +4,587 @@
 ; BGM entry: [duration in frames][byte count][PSG writes...], FFh loops.
 ; Three square-wave voices plus brief noise percussion; rests are explicit.
 
-; ---- 魔界の森 / A minor, 4-bar adventure theme ----
+; ---- 魔界の森 (Stage 1) / A minor, 8-bar Knightmare-style march ----
 BGM_FIELD1:
-        db 15, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B5h,0C9h,03Fh,0D3h,0E7h,0F9h ; E5/A4/A2
-        db 15, 10, 08Fh,007h,091h,0AAh,00Ah,0B5h,0C9h,03Fh,0D3h,0FFh ; A5/E5/A2
-        db 15, 10, 08Fh,008h,091h,0A6h,00Dh,0B5h,0C7h,02Ah,0D3h,0FFh ; G5/C5/E3
-        db 15, 10, 08Ah,00Ah,091h,0AAh,00Ah,0B5h,0C9h,03Fh,0D3h,0FFh ; E5/E5/A2
-        db 15, 10, 086h,00Dh,091h,0AEh,00Fh,0B5h,0C1h,028h,0D3h,0FFh ; C5/A4/F3
-        db 15, 10, 08Ah,00Ah,091h,0AAh,00Ah,0B5h,0C1h,028h,0D3h,0FFh ; E5/E5/F3
-        db 15, 10, 08Eh,00Fh,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; A4/C5/C3
-        db 15, 10, 086h,00Dh,091h,0AAh,00Ah,0B5h,0C1h,028h,0D3h,0FFh ; C5/E5/F3
-        db 15, 11, 086h,00Dh,091h,0A0h,014h,0B5h,0C7h,035h,0D3h,0E7h,0F9h ; C5/F4/C3
-        db 15, 10, 08Eh,00Fh,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; A4/C5/C3
-        db 15, 10, 080h,014h,091h,0AEh,00Fh,0B5h,0CBh,023h,0D3h,0FFh ; F4/A4/G3
-        db 15, 10, 08Eh,00Fh,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; A4/C5/C3
-        db 15, 10, 086h,00Dh,091h,0A0h,014h,0B5h,0CBh,023h,0D3h,0FFh ; C5/F4/G3
-        db 15, 10, 08Eh,00Fh,091h,0A6h,00Dh,0B5h,0CBh,023h,0D3h,0FFh ; A4/C5/G3
-        db 15, 10, 08Dh,011h,091h,0AEh,00Fh,0B5h,0C7h,035h,0D3h,0FFh ; G4/A4/C3
-        db 15, 10, 083h,015h,091h,0A6h,00Dh,0B5h,0CBh,023h,0D3h,0FFh ; E4/C5/G3
-        db 15, 11, 08Dh,011h,091h,0A3h,015h,0B5h,0CBh,023h,0D3h,0E7h,0F9h ; G4/E4/G3
-        db 15, 10, 086h,00Dh,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; C5/G4/G3
-        db 15, 10, 08Ah,00Ah,091h,0A6h,00Dh,0B5h,0CAh,02Fh,0D3h,0FFh ; E5/C5/D3
-        db 15, 10, 08Fh,008h,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; G5/G4/G3
-        db 15, 10, 08Ah,00Ah,091h,0A3h,015h,0B5h,0C7h,02Ah,0D3h,0FFh ; E5/E4/E3
-        db 15, 10, 08Eh,00Bh,091h,0ADh,011h,0B5h,0C7h,02Ah,0D3h,0FFh ; D5/G4/E3
-        db 15, 10, 086h,00Dh,091h,0A6h,00Dh,0B5h,0CAh,038h,0D3h,0FFh ; C5/C5/B2
-        db 15, 10, 08Dh,011h,091h,0ADh,011h,0B5h,0C7h,02Ah,0D3h,0FFh ; G4/G4/E3
-        db 15, 11, 08Eh,00Bh,091h,0ADh,017h,0B5h,0CAh,02Fh,0D3h,0E7h,0F9h ; D5/D4/D3
-        db 15, 10, 082h,00Eh,091h,0ADh,011h,0B5h,0CAh,02Fh,0D3h,0FFh ; B4/G4/D3
-        db 15, 10, 08Dh,011h,091h,0A5h,01Ch,0B5h,0C9h,03Fh,0D3h,0FFh ; G4/B3/A2
-        db 15, 10, 082h,00Eh,091h,0ADh,011h,0B5h,0CAh,02Fh,0D3h,0FFh ; B4/G4/D3
-        db 15, 10, 08Eh,00Bh,091h,0ADh,017h,0B5h,0CAh,038h,0D3h,0FFh ; D5/D4/B2
-        db 15, 10, 086h,00Dh,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; C5/G4/G3
-        db 15, 10, 082h,00Eh,091h,0A5h,01Ch,0B5h,0CAh,02Fh,0D3h,0FFh ; B4/B3/D3
-        db 15, 10, 08Dh,011h,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; G4/G4/G3
+        db 6, 11, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; A4/C4/A3
+        db 2, 10, 08Eh,00Fh,093h,0ACh,01Ah,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0A3h,015h,0B4h,0C7h,02Ah,0D2h,0E7h,0F9h ; C5/E4/E3
+        db 2, 10, 086h,00Dh,093h,0A3h,015h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E7h,0F6h ; E5/A4/A3
+        db 2, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D7h,0E7h,0FAh
+        db 6, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0FFh ; E5/A4/A3
+        db 2, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0C7h,02Ah,0D2h,0E7h,0F9h ; E5/A4/E3
+        db 2, 10, 08Ah,00Ah,093h,0AEh,00Fh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 10, 08Eh,00Bh,091h,0A2h,00Eh,0B4h,0CCh,01Fh,0D2h,0FFh ; D5/B4/A3
+        db 2, 10, 08Eh,00Bh,093h,0A2h,00Eh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; C5/A4/A3
+        db 2, 10, 086h,00Dh,093h,0AEh,00Fh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,093h,0ADh,010h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E7h,0F6h ; C5/A4/A3
+        db 2, 11, 086h,00Dh,093h,0AEh,00Fh,0B6h,0CCh,01Fh,0D7h,0E7h,0FAh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Eh,00Fh,091h,0A3h,015h,0B4h,0C7h,02Ah,0D2h,0E7h,0F9h ; A4/E4/E3
+        db 2, 10, 08Eh,00Fh,093h,0A3h,015h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 6, 11, 080h,00Ah,091h,0AEh,00Fh,0B4h,0C1h,028h,0D2h,0E6h,0F6h ; F5/A4/F3
+        db 2, 10, 080h,00Ah,091h,0AEh,00Fh,0B4h,0C1h,028h,0D7h,0FFh
+        db 6, 10, 080h,00Ah,091h,0AEh,00Fh,0B4h,0C1h,028h,0D2h,0FFh ; F5/A4/F3
+        db 2, 10, 080h,00Ah,091h,0AEh,00Fh,0B4h,0C1h,028h,0D7h,0FFh
+        db 6, 11, 080h,00Ah,091h,0AEh,00Fh,0B4h,0C7h,035h,0D2h,0E7h,0F9h ; F5/A4/C3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B6h,0C7h,035h,0D7h,0FFh
+        db 6, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C1h,028h,0D2h,0FFh ; E5/G4/F3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B6h,0C1h,028h,0D7h,0FFh
+        db 6, 11, 08Eh,00Bh,091h,0A0h,014h,0B4h,0CAh,02Fh,0D2h,0E7h,0F6h ; D5/F4/D3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,014h,0B6h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 6, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0A3h,015h,0B4h,0CCh,01Fh,0D2h,0E7h,0F9h ; C5/E4/A3
+        db 2, 10, 086h,00Dh,093h,0A3h,015h,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 6, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D7h,0FFh
+        db 6, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0FFh ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D7h,0FFh
+        db 6, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0CAh,038h,0D2h,0E7h,0F6h ; B4/G#4/B2
+        db 2, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0CAh,038h,0D7h,0E7h,0FAh
+        db 6, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0FFh ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,093h,0ADh,010h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; E5/B4/E3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0C1h,028h,0D2h,0FFh ; -/-/F3
+        db 2, 6, 09Fh,0BFh,0C1h,028h,0D7h,0FFh
+        db 6, 7, 09Fh,0BFh,0CBh,023h,0D2h,0E7h,0F6h ; -/-/G3
+        db 2, 7, 09Fh,0BFh,0CBh,023h,0D7h,0E7h,0FAh
+        db 6, 6, 09Fh,0BFh,0CBh,021h,0D2h,0FFh ; -/-/G#3
+        db 2, 6, 09Fh,0BFh,0CBh,021h,0D7h,0FFh
+        db 6, 11, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; A4/C4/A3
+        db 2, 10, 08Eh,00Fh,093h,0ACh,01Ah,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0A3h,015h,0B4h,0C7h,02Ah,0D2h,0E7h,0F9h ; C5/E4/E3
+        db 2, 10, 086h,00Dh,093h,0A3h,015h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E7h,0F6h ; E5/A4/A3
+        db 2, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D7h,0E7h,0FAh
+        db 6, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0FFh ; E5/A4/A3
+        db 2, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0AEh,00Fh,0B4h,0C7h,02Ah,0D2h,0E7h,0F9h ; E5/A4/E3
+        db 2, 10, 08Ah,00Ah,093h,0AEh,00Fh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 10, 08Eh,00Bh,091h,0A2h,00Eh,0B4h,0CCh,01Fh,0D2h,0FFh ; D5/B4/A3
+        db 2, 10, 08Eh,00Bh,093h,0A2h,00Eh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; C5/A4/A3
+        db 2, 10, 086h,00Dh,093h,0AEh,00Fh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,093h,0ADh,010h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0E7h,0F6h ; C5/A4/A3
+        db 2, 11, 086h,00Dh,093h,0AEh,00Fh,0B6h,0CCh,01Fh,0D7h,0E7h,0FAh
+        db 6, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0A6h,00Dh,0B4h,0CBh,023h,0D2h,0E7h,0F9h ; E5/C5/G3
+        db 2, 10, 08Ah,00Ah,093h,0A6h,00Dh,0B6h,0CBh,023h,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 6, 11, 080h,00Ah,091h,0AEh,00Bh,0B4h,0CAh,02Fh,0D2h,0E6h,0F6h ; F5/D5/D3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Bh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 6, 11, 08Ah,00Ah,091h,0A6h,00Dh,0B4h,0CCh,01Fh,0D2h,0E7h,0F9h ; E5/C5/A3
+        db 2, 10, 08Ah,00Ah,093h,0A6h,00Dh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 6, 11, 08Eh,00Bh,091h,0A2h,00Eh,0B4h,0C1h,028h,0D2h,0E7h,0F6h ; D5/B4/F3
+        db 2, 11, 08Eh,00Bh,093h,0A2h,00Eh,0B6h,0C1h,028h,0D7h,0E7h,0FAh
+        db 6, 6, 09Fh,0BFh,0C1h,028h,0D2h,0FFh ; -/-/F3
+        db 2, 6, 09Fh,0BFh,0C1h,028h,0D7h,0FFh
+        db 6, 11, 086h,00Dh,091h,0AEh,00Fh,0B4h,0C7h,035h,0D2h,0E7h,0F9h ; C5/A4/C3
+        db 2, 10, 086h,00Dh,093h,0AEh,00Fh,0B6h,0C7h,035h,0D7h,0FFh
+        db 6, 6, 09Fh,0BFh,0C1h,028h,0D2h,0FFh ; -/-/F3
+        db 2, 6, 09Fh,0BFh,0C1h,028h,0D7h,0FFh
+        db 6, 11, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D7h,0FFh
+        db 6, 10, 082h,00Eh,091h,0ADh,010h,0B4h,0C7h,02Ah,0D2h,0FFh ; B4/G#4/E3
+        db 2, 10, 082h,00Eh,093h,0ADh,010h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 11, 08Dh,010h,091h,0A3h,015h,0B4h,0CAh,038h,0D2h,0E7h,0F6h ; G#4/E4/B2
+        db 2, 11, 08Dh,010h,091h,0A3h,015h,0B4h,0CAh,038h,0D7h,0E7h,0FAh
+        db 6, 10, 08Dh,010h,091h,0A3h,015h,0B4h,0C7h,02Ah,0D2h,0FFh ; G#4/E4/E3
+        db 2, 10, 08Dh,010h,093h,0A3h,015h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 6, 11, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; A4/C4/A3
+        db 2, 10, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0CCh,01Fh,0D7h,0FFh
+        db 6, 10, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0C7h,02Ah,0D2h,0FFh ; A4/C4/E3
+        db 2, 10, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0C7h,02Ah,0D7h,0FFh
+        db 6, 10, 08Eh,00Fh,091h,0ACh,01Ah,0B4h,0CCh,01Fh,0D2h,0FFh ; A4/C4/A3
+        db 2, 10, 08Eh,00Fh,093h,0ACh,01Ah,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 6, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
         db 0FFh                    ; loop
 
-; ---- 墓地から魔城 / D minor, darker 4-bar theme ----
+; ---- 墓地から魔城 (Stage 3-5) / D minor, Baroque gothic theme ----
 BGM_FIELD2:
-        db 12, 11, 08Eh,00Fh,091h,0A0h,014h,0B6h,0CAh,02Fh,0D3h,0E7h,0F8h ; A4/F4/D3
-        db 12, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0CAh,02Fh,0D3h,0FFh ; D5/A4/D3
-        db 12, 10, 080h,00Ah,091h,0AEh,00Bh,0B6h,0CCh,01Fh,0D3h,0FFh ; F5/D5/A3
-        db 12, 10, 08Fh,007h,091h,0AEh,00Fh,0B6h,0CAh,02Fh,0D3h,0FFh ; A5/A4/D3
-        db 12, 10, 08Fh,008h,091h,0A0h,014h,0B6h,0C0h,03Ch,0D3h,0FFh ; G5/F4/A#2
-        db 12, 10, 080h,00Ah,091h,0AEh,00Fh,0B6h,0C0h,03Ch,0D3h,0FFh ; F5/A4/A#2
-        db 12, 10, 08Ah,00Ah,091h,0AEh,00Bh,0B6h,0C1h,028h,0D3h,0FFh ; E5/D5/F3
-        db 12, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0C0h,03Ch,0D3h,0FFh ; D5/A4/A#2
-        db 12, 11, 086h,00Dh,091h,0A0h,014h,0B6h,0C1h,028h,0D3h,0E7h,0F8h ; C5/F4/F3
-        db 12, 10, 080h,00Ah,091h,0AEh,00Fh,0B6h,0C1h,028h,0D3h,0FFh ; F5/A4/F3
-        db 12, 10, 08Fh,007h,091h,0A6h,00Dh,0B6h,0C7h,035h,0D3h,0FFh ; A5/C5/C3
-        db 12, 10, 08Bh,006h,091h,0AEh,00Fh,0B6h,0C1h,028h,0D3h,0FFh ; C6/A4/F3
-        db 12, 10, 08Fh,007h,091h,0A0h,014h,0B6h,0CCh,01Ah,0D3h,0FFh ; A5/F4/C4
-        db 12, 10, 08Fh,008h,091h,0AEh,00Fh,0B6h,0C7h,035h,0D3h,0FFh ; G5/A4/C3
-        db 12, 10, 080h,00Ah,091h,0A6h,00Dh,0B6h,0C1h,028h,0D3h,0FFh ; F5/C5/F3
-        db 12, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B6h,0C7h,035h,0D3h,0FFh ; E5/A4/C3
-        db 12, 11, 08Eh,00Bh,091h,0A0h,014h,0B6h,0CBh,023h,0D3h,0E7h,0F8h ; D5/F4/G3
-        db 12, 10, 08Fh,007h,091h,0AEh,00Fh,0B6h,0CBh,023h,0D3h,0FFh ; A5/A4/G3
-        db 12, 10, 08Fh,005h,091h,0AEh,00Bh,0B6h,0CAh,02Fh,0D3h,0FFh ; D6/D5/D3
-        db 12, 10, 08Bh,006h,091h,0AEh,00Fh,0B6h,0CBh,023h,0D3h,0FFh ; C6/A4/G3
-        db 12, 10, 08Fh,007h,091h,0A0h,014h,0B6h,0C9h,03Fh,0D3h,0FFh ; A5/F4/A2
-        db 12, 10, 080h,00Ah,091h,0AEh,00Fh,0B6h,0C9h,03Fh,0D3h,0FFh ; F5/A4/A2
-        db 12, 10, 08Fh,008h,091h,0AEh,00Bh,0B6h,0C7h,02Ah,0D3h,0FFh ; G5/D5/E3
-        db 12, 10, 08Fh,007h,091h,0AEh,00Fh,0B6h,0C9h,03Fh,0D3h,0FFh ; A5/A4/A2
-        db 12, 11, 08Ah,00Ah,091h,0A3h,015h,0B6h,0CCh,01Fh,0D3h,0E7h,0F8h ; E5/E4/A3
-        db 12, 10, 08Ah,00Ch,091h,0ADh,011h,0B6h,0CCh,01Fh,0D3h,0FFh ; C#5/G4/A3
-        db 12, 10, 08Eh,00Fh,091h,0AAh,00Ch,0B6h,0C7h,02Ah,0D3h,0FFh ; A4/C#5/E3
-        db 12, 10, 08Ah,00Ch,091h,0ADh,011h,0B6h,0CCh,01Fh,0D3h,0FFh ; C#5/G4/A3
-        db 12, 10, 08Ah,00Ah,091h,0A3h,015h,0B6h,0C9h,03Fh,0D3h,0FFh ; E5/E4/A2
-        db 12, 10, 08Fh,008h,091h,0ADh,011h,0B6h,0C9h,03Fh,0D3h,0FFh ; G5/G4/A2
-        db 12, 10, 080h,00Ah,091h,0AAh,00Ch,0B6h,0C7h,02Ah,0D3h,0FFh ; F5/C#5/E3
-        db 12, 10, 08Ah,00Ah,091h,0ADh,011h,0B6h,0C9h,03Fh,0D3h,0FFh ; E5/G4/A2
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E6h,0F6h ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0FFh ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D2h,0E7h,0F9h ; F5/A4/A3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0ADh,011h,0B5h,0CAh,02Fh,0D2h,0FFh ; E5/G4/D3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E7h,0F6h ; D5/F4/D3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Fh,091h,0A0h,014h,0B5h,0CCh,01Fh,0D2h,0E7h,0F9h ; A4/F4/A3
+        db 2, 10, 08Eh,00Fh,093h,0A0h,014h,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 080h,00Fh,091h,0ADh,011h,0B5h,0CBh,023h,0D2h,0E6h,0F6h ; A#4/G4/G3
+        db 2, 10, 080h,00Fh,091h,0ADh,011h,0B5h,0CBh,023h,0D7h,0FFh
+        db 5, 10, 080h,00Fh,091h,0ADh,011h,0B5h,0CBh,023h,0D2h,0FFh ; A#4/G4/G3
+        db 2, 10, 080h,00Fh,093h,0ADh,011h,0B7h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,00Fh,0B5h,0CAh,02Fh,0D2h,0E7h,0F9h ; D5/A#4/D3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,00Fh,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 086h,00Dh,091h,0AEh,00Fh,0B5h,0CBh,023h,0D2h,0FFh ; C5/A4/G3
+        db 2, 10, 086h,00Dh,093h,0AEh,00Fh,0B7h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 080h,00Fh,091h,0ADh,011h,0B5h,0CBh,023h,0D2h,0E7h,0F6h ; A#4/G4/G3
+        db 2, 11, 080h,00Fh,093h,0ADh,011h,0B7h,0CBh,023h,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Eh,00Fh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E7h,0F9h ; A4/F4/D3
+        db 2, 10, 08Eh,00Fh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C1h,028h,0D2h,0FFh ; -/-/F3
+        db 2, 6, 09Fh,0BFh,0C1h,028h,0D7h,0FFh
+        db 5, 11, 08Dh,011h,091h,0ADh,017h,0B5h,0C7h,02Ah,0D2h,0E6h,0F6h ; G4/D4/E3
+        db 2, 10, 08Dh,011h,093h,0ADh,017h,0B7h,0C7h,02Ah,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 080h,00Fh,091h,0ADh,011h,0B5h,0C0h,03Ch,0D2h,0E7h,0F9h ; A#4/G4/A#2
+        db 2, 10, 080h,00Fh,093h,0ADh,011h,0B7h,0C0h,03Ch,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,00Fh,0B5h,0C7h,02Ah,0D2h,0E7h,0F6h ; D5/A#4/E3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,00Fh,0B7h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0AEh,00Bh,0B5h,0C0h,03Ch,0D2h,0E7h,0F9h ; G5/D5/A#2
+        db 2, 10, 08Fh,008h,093h,0AEh,00Bh,0B7h,0C0h,03Ch,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D2h,0E6h,0F6h ; F5/A4/A3
+        db 2, 10, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D2h,0FFh ; F5/A4/A3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0ADh,011h,0B5h,0C7h,02Ah,0D2h,0E7h,0F6h ; E5/G4/E3
+        db 2, 11, 08Ah,00Ah,093h,0ADh,011h,0B7h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CCh,01Fh,0D2h,0FFh ; D5/F4/A3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 08Ah,00Ch,091h,0A3h,015h,0B5h,0CCh,01Fh,0D2h,0E7h,0F6h ; C#5/E4/A3
+        db 2, 11, 08Ah,00Ch,093h,0A3h,015h,0B7h,0CCh,01Fh,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Eh,00Fh,091h,0A4h,019h,0B5h,0C1h,028h,0D2h,0E7h,0F6h ; A4/C#4/F3
+        db 2, 11, 08Eh,00Fh,093h,0A4h,019h,0B7h,0C1h,028h,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E6h,0F6h ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0FFh ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D2h,0E7h,0F9h ; F5/A4/A3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0ADh,011h,0B5h,0CAh,02Fh,0D2h,0FFh ; E5/G4/D3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E7h,0F6h ; D5/F4/D3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CCh,01Fh,0D2h,0E7h,0F9h ; F5/A4/A3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0A0h,00Fh,0B5h,0CBh,023h,0D2h,0E6h,0F6h ; G5/A#4/G3
+        db 2, 10, 08Fh,008h,091h,0A0h,00Fh,0B5h,0CBh,023h,0D7h,0FFh
+        db 5, 10, 08Fh,008h,091h,0A0h,00Fh,0B5h,0CBh,023h,0D2h,0FFh ; G5/A#4/G3
+        db 2, 10, 08Fh,008h,093h,0A0h,00Fh,0B7h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 088h,007h,091h,0AEh,00Bh,0B5h,0CAh,02Fh,0D2h,0E7h,0F9h ; A#5/D5/D3
+        db 2, 10, 088h,007h,093h,0AEh,00Bh,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 08Fh,007h,091h,0A6h,00Dh,0B5h,0CBh,023h,0D2h,0FFh ; A5/C5/G3
+        db 2, 10, 08Fh,007h,093h,0A6h,00Dh,0B7h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0A0h,00Fh,0B5h,0CBh,023h,0D2h,0E7h,0F6h ; G5/A#4/G3
+        db 2, 11, 08Fh,008h,093h,0A0h,00Fh,0B7h,0CBh,023h,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0CAh,02Fh,0D2h,0E7h,0F9h ; F5/A4/D3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0ADh,011h,0B5h,0CCh,01Fh,0D2h,0E6h,0F6h ; E5/G4/A3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0A0h,00Fh,0B5h,0C7h,02Ah,0D2h,0E7h,0F6h ; G5/A#4/E3
+        db 2, 11, 08Fh,008h,093h,0A0h,00Fh,0B7h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 080h,00Ah,091h,0AEh,00Fh,0B5h,0C0h,03Ch,0D2h,0E6h,0F6h ; F5/A4/A#2
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B7h,0C0h,03Ch,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0C1h,028h,0D2h,0E7h,0F6h ; D5/F4/F3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,014h,0B7h,0C1h,028h,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 5, 11, 08Ah,00Ch,091h,0A3h,015h,0B5h,0CCh,01Fh,0D2h,0E6h,0F6h ; C#5/E4/A3
+        db 2, 10, 08Ah,00Ch,091h,0A3h,015h,0B5h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 08Ah,00Ch,091h,0A3h,015h,0B5h,0CCh,01Fh,0D2h,0FFh ; C#5/E4/A3
+        db 2, 10, 08Ah,00Ch,093h,0A3h,015h,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,011h,0B5h,0C7h,02Ah,0D2h,0E7h,0F6h ; B4/G4/E3
+        db 2, 11, 082h,00Eh,093h,0ADh,011h,0B7h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 10, 08Ah,00Ch,091h,0A3h,015h,0B5h,0CCh,01Fh,0D2h,0FFh ; C#5/E4/A3
+        db 2, 10, 08Ah,00Ch,093h,0A3h,015h,0B7h,0CCh,01Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0E6h,0F6h ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CCh,01Fh,0D2h,0FFh ; D5/F4/A3
+        db 2, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 08Eh,00Bh,091h,0A0h,014h,0B5h,0CAh,02Fh,0D2h,0FFh ; D5/F4/D3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,014h,0B7h,0CAh,02Fh,0D7h,0FFh
+        db 5, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
         db 0FFh                    ; loop
 
-; ---- ボス戦 / D minor, driving 4-bar battle theme ----
+; ---- ボス戦 / D minor, frantic chromatic battle theme ----
 BGM_BOSS:
-        db 10, 11, 08Eh,00Bh,091h,0A0h,014h,0B6h,0CAh,02Fh,0D2h,0E7h,0F7h ; D5/F4/D3
-        db 10, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
-        db 10, 10, 08Eh,00Fh,091h,0AEh,00Bh,0B6h,0CAh,02Fh,0D2h,0FFh ; A4/D5/D3
-        db 10, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
-        db 10, 11, 080h,00Ah,091h,0A0h,014h,0B6h,0C9h,03Fh,0D2h,0E7h,0F7h ; F5/F4/A2
-        db 10, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0C9h,03Fh,0D2h,0FFh ; D5/A4/A2
-        db 10, 10, 08Eh,00Fh,091h,0AEh,00Bh,0B6h,0C9h,03Fh,0D2h,0FFh ; A4/D5/A2
-        db 10, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B6h,0C9h,03Fh,0D2h,0FFh ; D5/A4/A2
-        db 10, 11, 086h,00Dh,091h,0A3h,015h,0B6h,0C7h,035h,0D2h,0E7h,0F7h ; C5/E4/C3
-        db 10, 10, 086h,00Dh,091h,0ADh,011h,0B6h,0C7h,035h,0D2h,0FFh ; C5/G4/C3
-        db 10, 10, 08Dh,011h,091h,0A6h,00Dh,0B6h,0C7h,035h,0D2h,0FFh ; G4/C5/C3
-        db 10, 10, 086h,00Dh,091h,0ADh,011h,0B6h,0C7h,035h,0D2h,0FFh ; C5/G4/C3
-        db 10, 11, 08Ah,00Ah,091h,0A3h,015h,0B6h,0CBh,023h,0D2h,0E7h,0F7h ; E5/E4/G3
-        db 10, 10, 086h,00Dh,091h,0ADh,011h,0B6h,0CBh,023h,0D2h,0FFh ; C5/G4/G3
-        db 10, 10, 08Dh,011h,091h,0A6h,00Dh,0B6h,0CBh,023h,0D2h,0FFh ; G4/C5/G3
-        db 10, 10, 086h,00Dh,091h,0ADh,011h,0B6h,0CBh,023h,0D2h,0FFh ; C5/G4/G3
-        db 10, 11, 080h,00Fh,091h,0ADh,017h,0B6h,0C0h,03Ch,0D2h,0E7h,0F7h ; A#4/D4/A#2
-        db 10, 10, 080h,00Fh,091h,0A0h,014h,0B6h,0C0h,03Ch,0D2h,0FFh ; A#4/F4/A#2
-        db 10, 10, 080h,014h,091h,0A0h,00Fh,0B6h,0C0h,03Ch,0D2h,0FFh ; F4/A#4/A#2
-        db 10, 10, 080h,00Fh,091h,0A0h,014h,0B6h,0C0h,03Ch,0D2h,0FFh ; A#4/F4/A#2
-        db 10, 11, 08Eh,00Bh,091h,0ADh,017h,0B6h,0C1h,028h,0D2h,0E7h,0F7h ; D5/D4/F3
-        db 10, 10, 080h,00Fh,091h,0A0h,014h,0B6h,0C1h,028h,0D2h,0FFh ; A#4/F4/F3
-        db 10, 10, 080h,014h,091h,0A0h,00Fh,0B6h,0C1h,028h,0D2h,0FFh ; F4/A#4/F3
-        db 10, 10, 080h,00Fh,091h,0A0h,014h,0B6h,0C1h,028h,0D2h,0FFh ; A#4/F4/F3
-        db 10, 11, 08Eh,00Fh,091h,0A4h,019h,0B6h,0C9h,03Fh,0D2h,0E7h,0F7h ; A4/C#4/A2
-        db 10, 10, 08Eh,00Fh,091h,0A3h,015h,0B6h,0C9h,03Fh,0D2h,0FFh ; A4/E4/A2
-        db 10, 10, 083h,015h,091h,0AEh,00Fh,0B6h,0C9h,03Fh,0D2h,0FFh ; E4/A4/A2
-        db 10, 10, 08Eh,00Fh,091h,0A3h,015h,0B6h,0C9h,03Fh,0D2h,0FFh ; A4/E4/A2
-        db 10, 11, 08Ah,00Ch,091h,0A4h,019h,0B6h,0C7h,02Ah,0D2h,0E7h,0F7h ; C#5/C#4/E3
-        db 10, 10, 08Eh,00Fh,091h,0A3h,015h,0B6h,0C7h,02Ah,0D2h,0FFh ; A4/E4/E3
-        db 10, 10, 083h,015h,091h,0AEh,00Fh,0B6h,0C7h,02Ah,0D2h,0FFh ; E4/A4/E3
-        db 10, 10, 08Eh,00Fh,091h,0A3h,015h,0B6h,0C7h,02Ah,0D2h,0FFh ; A4/E4/E3
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0E6h,0F5h ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 7, 09Fh,0BFh,0CDh,017h,0D2h,0E7h,0F5h ; -/-/D4
+        db 2, 7, 09Fh,0BFh,0CDh,017h,0D7h,0E7h,0F9h
+        db 4, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Bh,0B4h,0CAh,02Fh,0D2h,0E6h,0F5h ; F5/D5/D3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Bh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CDh,017h,0D2h,0E7h,0F5h ; D5/A4/D4
+        db 2, 11, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CDh,017h,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D2h,0E6h,0F5h ; G#5/D5/B2
+        db 2, 10, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D7h,0FFh
+        db 4, 10, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D2h,0FFh ; G#5/D5/B2
+        db 2, 10, 087h,008h,093h,0AEh,00Bh,0B6h,0CAh,038h,0D7h,0FFh
+        db 4, 11, 08Fh,008h,091h,0AAh,00Ch,0B4h,0C5h,01Ch,0D2h,0E7h,0F5h ; G5/C#5/B3
+        db 2, 11, 08Fh,008h,091h,0AAh,00Ch,0B4h,0C5h,01Ch,0D7h,0E7h,0F9h
+        db 4, 10, 08Fh,008h,091h,0AAh,00Ch,0B4h,0CAh,038h,0D2h,0FFh ; G5/C#5/B2
+        db 2, 10, 08Fh,008h,093h,0AAh,00Ch,0B6h,0CAh,038h,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Bh,0B4h,0C0h,03Ch,0D2h,0E6h,0F5h ; F5/D5/A#2
+        db 2, 10, 080h,00Ah,093h,0AEh,00Bh,0B6h,0C0h,03Ch,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0C0h,01Eh,0D2h,0E7h,0F5h ; D5/A4/A#3
+        db 2, 11, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0C0h,01Eh,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 4, 11, 080h,00Fh,091h,0A0h,014h,0B4h,0CBh,023h,0D2h,0E6h,0F5h ; A#4/F4/G3
+        db 2, 10, 080h,00Fh,093h,0A0h,014h,0B6h,0CBh,023h,0D7h,0FFh
+        db 4, 10, 080h,00Fh,091h,0A0h,014h,0B4h,0CBh,023h,0D2h,0FFh ; A#4/F4/G3
+        db 2, 10, 080h,00Fh,093h,0A0h,014h,0B6h,0CBh,023h,0D7h,0FFh
+        db 4, 7, 09Fh,0BFh,0CDh,011h,0D2h,0E7h,0F5h ; -/-/G4
+        db 2, 7, 09Fh,0BFh,0CDh,011h,0D7h,0E7h,0F9h
+        db 4, 10, 080h,00Fh,091h,0A0h,014h,0B4h,0CBh,023h,0D2h,0FFh ; A#4/F4/G3
+        db 2, 10, 080h,00Fh,093h,0A0h,014h,0B6h,0CBh,023h,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0A0h,00Fh,0B4h,0CBh,023h,0D2h,0E6h,0F5h ; D5/A#4/G3
+        db 2, 10, 08Eh,00Bh,093h,0A0h,00Fh,0B6h,0CBh,023h,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 4, 11, 080h,00Fh,091h,0A0h,014h,0B4h,0CDh,011h,0D2h,0E7h,0F5h ; A#4/F4/G4
+        db 2, 11, 080h,00Fh,093h,0A0h,014h,0B6h,0CDh,011h,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 4, 11, 08Ah,00Ah,091h,0A0h,00Fh,0B4h,0CCh,01Fh,0D2h,0E6h,0F5h ; E5/A#4/A3
+        db 2, 10, 08Ah,00Ah,091h,0A0h,00Fh,0B4h,0CCh,01Fh,0D7h,0FFh
+        db 4, 10, 08Ah,00Ah,091h,0A0h,00Fh,0B4h,0CCh,01Fh,0D2h,0FFh ; E5/A#4/A3
+        db 2, 10, 08Ah,00Ah,093h,0A0h,00Fh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Fh,0B4h,0CEh,00Fh,0D2h,0E7h,0F5h ; F5/A4/A4
+        db 2, 11, 080h,00Ah,091h,0AEh,00Fh,0B4h,0CEh,00Fh,0D7h,0E7h,0F9h
+        db 4, 10, 080h,00Ah,091h,0AEh,00Fh,0B4h,0CCh,01Fh,0D2h,0FFh ; F5/A4/A3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Fh,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 4, 11, 08Ah,00Ah,091h,0ADh,011h,0B4h,0CCh,01Fh,0D2h,0E7h,0F5h ; E5/G4/A3
+        db 2, 11, 08Ah,00Ah,093h,0ADh,011h,0B6h,0CCh,01Fh,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 4, 11, 08Ah,00Ch,091h,0A3h,015h,0B4h,0C1h,028h,0D2h,0E7h,0F5h ; C#5/E4/F3
+        db 2, 11, 08Ah,00Ch,093h,0A3h,015h,0B6h,0C1h,028h,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0E6h,0F5h ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 7, 09Fh,0BFh,0CDh,017h,0D2h,0E7h,0F5h ; -/-/D4
+        db 2, 7, 09Fh,0BFh,0CDh,017h,0D7h,0E7h,0F9h
+        db 4, 10, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0FFh ; D5/A4/D3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Bh,0B4h,0CAh,02Fh,0D2h,0E6h,0F5h ; F5/D5/D3
+        db 2, 10, 080h,00Ah,093h,0AEh,00Bh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0CDh,017h,0D2h,0E7h,0F5h ; D5/A4/D4
+        db 2, 11, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0CDh,017h,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D2h,0E6h,0F5h ; G#5/D5/B2
+        db 2, 10, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D7h,0FFh
+        db 4, 10, 087h,008h,091h,0AEh,00Bh,0B4h,0CAh,038h,0D2h,0FFh ; G#5/D5/B2
+        db 2, 10, 087h,008h,093h,0AEh,00Bh,0B6h,0CAh,038h,0D7h,0FFh
+        db 4, 11, 08Fh,008h,091h,0AAh,00Ch,0B4h,0C5h,01Ch,0D2h,0E7h,0F5h ; G5/C#5/B3
+        db 2, 11, 08Fh,008h,091h,0AAh,00Ch,0B4h,0C5h,01Ch,0D7h,0E7h,0F9h
+        db 4, 10, 08Fh,008h,091h,0AAh,00Ch,0B4h,0CAh,038h,0D2h,0FFh ; G5/C#5/B2
+        db 2, 10, 08Fh,008h,093h,0AAh,00Ch,0B6h,0CAh,038h,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Bh,0B4h,0C0h,03Ch,0D2h,0E6h,0F5h ; F5/D5/A#2
+        db 2, 10, 080h,00Ah,093h,0AEh,00Bh,0B6h,0C0h,03Ch,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B4h,0C0h,01Eh,0D2h,0E7h,0F5h ; D5/A4/A#3
+        db 2, 11, 08Eh,00Bh,093h,0AEh,00Fh,0B6h,0C0h,01Eh,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0C0h,03Ch,0D2h,0FFh ; -/-/A#2
+        db 2, 6, 09Fh,0BFh,0C0h,03Ch,0D7h,0FFh
+        db 4, 11, 088h,007h,091h,0AEh,00Bh,0B4h,0CBh,023h,0D2h,0E6h,0F5h ; A#5/D5/G3
+        db 2, 10, 088h,007h,093h,0AEh,00Bh,0B6h,0CBh,023h,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 4, 11, 08Fh,007h,091h,0A6h,00Dh,0B4h,0C1h,028h,0D2h,0E7h,0F5h ; A5/C5/F3
+        db 2, 11, 08Fh,007h,093h,0A6h,00Dh,0B6h,0C1h,028h,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0C1h,028h,0D2h,0FFh ; -/-/F3
+        db 2, 6, 09Fh,0BFh,0C1h,028h,0D7h,0FFh
+        db 4, 11, 08Fh,008h,091h,0A0h,00Fh,0B4h,0C7h,02Ah,0D2h,0E6h,0F5h ; G5/A#4/E3
+        db 2, 10, 08Fh,008h,093h,0A0h,00Fh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 4, 11, 080h,00Ah,091h,0AEh,00Fh,0B4h,0CAh,02Fh,0D2h,0E7h,0F5h ; F5/A4/D3
+        db 2, 11, 080h,00Ah,093h,0AEh,00Fh,0B6h,0CAh,02Fh,0D7h,0E7h,0F9h
+        db 4, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 4, 11, 08Ah,00Ah,091h,0ADh,011h,0B4h,0CCh,01Fh,0D2h,0E6h,0F5h ; E5/G4/A3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 4, 11, 08Ah,00Ch,091h,0A3h,015h,0B4h,0CCh,01Fh,0D2h,0E6h,0F5h ; C#5/E4/A3
+        db 2, 10, 08Ah,00Ch,093h,0A3h,015h,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 4, 6, 09Fh,0BFh,0CCh,01Fh,0D2h,0FFh ; -/-/A3
+        db 2, 6, 09Fh,0BFh,0CCh,01Fh,0D7h,0FFh
+        db 4, 11, 08Eh,00Bh,091h,0A0h,014h,0B4h,0CAh,02Fh,0D2h,0E7h,0F5h ; D5/F4/D3
+        db 2, 11, 08Eh,00Bh,093h,0A0h,014h,0B6h,0CAh,02Fh,0D7h,0E7h,0F9h
+        db 4, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
+        db 4, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
+        db 4, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
         db 0FFh                    ; loop
 
-; ---- 荒涼たる岩場 / E minor, 4-bar rock theme ----
+; ---- 荒涼たる岩場 (Stage 2) / E minor, syncopated driving rock ----
 BGM_ROCK:
-        db 13, 11, 08Ah,00Ah,091h,0ADh,011h,0B5h,0C7h,02Ah,0D3h,0E7h,0F8h ; E5/G4/E3
-        db 13, 10, 082h,00Eh,091h,0A2h,00Eh,0B5h,0C7h,02Ah,0D3h,0FFh ; B4/B4/E3
-        db 13, 10, 08Ah,00Ah,091h,0AAh,00Ah,0B5h,0CAh,038h,0D3h,0FFh ; E5/E5/B2
-        db 13, 10, 08Fh,008h,091h,0A2h,00Eh,0B5h,0C7h,02Ah,0D3h,0FFh ; G5/B4/E3
-        db 13, 10, 087h,009h,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; F#5/G4/G3
-        db 13, 10, 08Ah,00Ah,091h,0A2h,00Eh,0B5h,0CBh,023h,0D3h,0FFh ; E5/B4/G3
-        db 13, 10, 082h,00Eh,091h,0AAh,00Ah,0B5h,0CAh,02Fh,0D3h,0FFh ; B4/E5/D3
-        db 13, 10, 08Ah,00Ah,091h,0A2h,00Eh,0B5h,0CBh,023h,0D3h,0FFh ; E5/B4/G3
-        db 13, 11, 08Eh,00Bh,091h,0AEh,00Fh,0B5h,0CAh,02Fh,0D3h,0E7h,0F8h ; D5/A4/D3
-        db 13, 10, 08Eh,00Fh,091h,0AEh,00Bh,0B5h,0CAh,02Fh,0D3h,0FFh ; A4/D5/D3
-        db 13, 10, 08Eh,00Bh,091h,0A7h,009h,0B5h,0C9h,03Fh,0D3h,0FFh ; D5/F#5/A2
-        db 13, 10, 087h,009h,091h,0AEh,00Bh,0B5h,0CAh,02Fh,0D3h,0FFh ; F#5/D5/D3
-        db 13, 10, 08Ah,00Ah,091h,0AEh,00Fh,0B5h,0C9h,03Fh,0D3h,0FFh ; E5/A4/A2
-        db 13, 10, 08Eh,00Bh,091h,0AEh,00Bh,0B5h,0C9h,03Fh,0D3h,0FFh ; D5/D5/A2
-        db 13, 10, 08Eh,00Fh,091h,0A7h,009h,0B5h,0C7h,02Ah,0D3h,0FFh ; A4/F#5/E3
-        db 13, 10, 08Eh,00Bh,091h,0AEh,00Bh,0B5h,0C9h,03Fh,0D3h,0FFh ; D5/D5/A2
-        db 13, 11, 086h,00Dh,091h,0ADh,011h,0B5h,0C7h,035h,0D3h,0E7h,0F8h ; C5/G4/C3
-        db 13, 10, 08Dh,011h,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; G4/C5/C3
-        db 13, 10, 086h,00Dh,091h,0AAh,00Ah,0B5h,0CBh,023h,0D3h,0FFh ; C5/E5/G3
-        db 13, 10, 08Ah,00Ah,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; E5/C5/C3
-        db 13, 10, 08Eh,00Bh,091h,0ADh,011h,0B5h,0CBh,023h,0D3h,0FFh ; D5/G4/G3
-        db 13, 10, 086h,00Dh,091h,0A6h,00Dh,0B5h,0CBh,023h,0D3h,0FFh ; C5/C5/G3
-        db 13, 10, 08Dh,011h,091h,0AAh,00Ah,0B5h,0CAh,02Fh,0D3h,0FFh ; G4/E5/D3
-        db 13, 10, 086h,00Dh,091h,0A6h,00Dh,0B5h,0CBh,023h,0D3h,0FFh ; C5/C5/G3
-        db 13, 11, 082h,00Eh,091h,0AEh,012h,0B5h,0CAh,038h,0D3h,0E7h,0F8h ; B4/F#4/B2
-        db 13, 10, 08Eh,012h,091h,0A2h,00Eh,0B5h,0CAh,038h,0D3h,0FFh ; F#4/B4/B2
-        db 13, 10, 082h,00Eh,091h,0AEh,00Bh,0B5h,0CDh,025h,0D3h,0FFh ; B4/D5/F#3
-        db 13, 10, 08Eh,00Bh,091h,0A2h,00Eh,0B5h,0CAh,038h,0D3h,0FFh ; D5/B4/B2
-        db 13, 10, 086h,00Dh,091h,0AEh,012h,0B5h,0C7h,02Ah,0D3h,0FFh ; C5/F#4/E3
-        db 13, 10, 082h,00Eh,091h,0A2h,00Eh,0B5h,0C7h,02Ah,0D3h,0FFh ; B4/B4/E3
-        db 13, 10, 08Eh,012h,091h,0AEh,00Bh,0B5h,0CAh,038h,0D3h,0FFh ; F#4/D5/B2
-        db 13, 10, 082h,00Eh,091h,0A2h,00Eh,0B5h,0C7h,02Ah,0D3h,0FFh ; B4/B4/E3
+        db 5, 11, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; E5/B4/E3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,011h,0B4h,0CAh,038h,0D2h,0E7h,0F9h ; B4/G4/B2
+        db 2, 10, 082h,00Eh,093h,0ADh,011h,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0FFh ; E5/B4/E3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D2h,0E7h,0F6h ; G5/E5/E3
+        db 2, 11, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 10, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D2h,0FFh ; G5/E5/E3
+        db 2, 10, 08Fh,008h,093h,0AAh,00Ah,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 087h,009h,091h,0AEh,00Bh,0B4h,0CAh,02Fh,0D2h,0E7h,0F9h ; F#5/D5/D3
+        db 2, 10, 087h,009h,093h,0AEh,00Bh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0CAh,02Fh,0D2h,0E6h,0F6h ; E5/B4/D3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CCh,01Fh,0D2h,0E6h,0F6h ; D5/F#4/A3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,012h,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 5, 10, 082h,00Eh,091h,0ADh,017h,0B4h,0CAh,02Fh,0D2h,0FFh ; B4/D4/D3
+        db 2, 10, 082h,00Eh,093h,0ADh,017h,0B6h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CAh,02Fh,0D2h,0E7h,0F6h ; D5/F#4/D3
+        db 2, 11, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 5, 10, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CAh,02Fh,0D2h,0FFh ; D5/F#4/D3
+        db 2, 10, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CCh,01Fh,0D2h,0E7h,0F9h ; D5/F#4/A3
+        db 2, 10, 08Eh,00Bh,093h,0AEh,012h,0B6h,0CCh,01Fh,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 086h,00Dh,091h,0ADh,011h,0B4h,0C7h,035h,0D2h,0E6h,0F6h ; C5/G4/C3
+        db 2, 10, 086h,00Dh,093h,0ADh,011h,0B6h,0C7h,035h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,035h,0D2h,0FFh ; -/-/C3
+        db 2, 6, 09Fh,0BFh,0C7h,035h,0D7h,0FFh
+        db 5, 11, 08Dh,011h,091h,0A3h,015h,0B4h,0CBh,023h,0D2h,0E7h,0F9h ; G4/E4/G3
+        db 2, 10, 08Dh,011h,093h,0A3h,015h,0B6h,0CBh,023h,0D7h,0FFh
+        db 5, 10, 086h,00Dh,091h,0ADh,011h,0B4h,0C7h,035h,0D2h,0FFh ; C5/G4/C3
+        db 2, 10, 086h,00Dh,093h,0ADh,011h,0B6h,0C7h,035h,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0A6h,00Dh,0B4h,0C7h,035h,0D2h,0E7h,0F6h ; E5/C5/C3
+        db 2, 11, 08Ah,00Ah,091h,0A6h,00Dh,0B4h,0C7h,035h,0D7h,0E7h,0FAh
+        db 5, 10, 08Ah,00Ah,091h,0A6h,00Dh,0B4h,0C7h,035h,0D2h,0FFh ; E5/C5/C3
+        db 2, 10, 08Ah,00Ah,093h,0A6h,00Dh,0B6h,0C7h,035h,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A2h,00Eh,0B4h,0CBh,023h,0D2h,0E7h,0F9h ; D5/B4/G3
+        db 2, 10, 08Eh,00Bh,093h,0A2h,00Eh,0B6h,0CBh,023h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,035h,0D2h,0FFh ; -/-/C3
+        db 2, 6, 09Fh,0BFh,0C7h,035h,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,011h,0B4h,0CAh,038h,0D2h,0E6h,0F6h ; B4/G4/B2
+        db 2, 10, 082h,00Eh,093h,0ADh,011h,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CAh,038h,0D2h,0FFh ; -/-/B2
+        db 2, 6, 09Fh,0BFh,0CAh,038h,0D7h,0FFh
+        db 5, 11, 08Eh,00Fh,091h,0ADh,017h,0B4h,0CDh,025h,0D2h,0E7h,0F6h ; A4/D4/F#3
+        db 2, 11, 08Eh,00Fh,093h,0ADh,017h,0B6h,0CDh,025h,0D7h,0E7h,0FAh
+        db 5, 10, 08Dh,011h,091h,0A5h,01Ch,0B4h,0CAh,038h,0D2h,0FFh ; G4/B3/B2
+        db 2, 10, 08Dh,011h,093h,0A5h,01Ch,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,017h,0B4h,0CAh,038h,0D2h,0E6h,0F6h ; B4/D4/B2
+        db 2, 10, 082h,00Eh,091h,0ADh,017h,0B4h,0CAh,038h,0D7h,0FFh
+        db 5, 10, 082h,00Eh,091h,0ADh,017h,0B4h,0C7h,035h,0D2h,0FFh ; B4/D4/C3
+        db 2, 10, 082h,00Eh,091h,0ADh,017h,0B4h,0C7h,035h,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,017h,0B4h,0CAh,02Fh,0D2h,0E7h,0F6h ; B4/D4/D3
+        db 2, 11, 082h,00Eh,093h,0ADh,017h,0B6h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CFh,02Ch,0D2h,0FFh ; -/-/D#3
+        db 2, 6, 09Fh,0BFh,0CFh,02Ch,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; E5/B4/E3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 082h,00Eh,091h,0ADh,011h,0B4h,0CAh,038h,0D2h,0E7h,0F9h ; B4/G4/B2
+        db 2, 10, 082h,00Eh,093h,0ADh,011h,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0FFh ; E5/B4/E3
+        db 2, 10, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D2h,0E7h,0F6h ; G5/E5/E3
+        db 2, 11, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 10, 08Fh,008h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D2h,0FFh ; G5/E5/E3
+        db 2, 10, 08Fh,008h,093h,0AAh,00Ah,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Fh,007h,091h,0A7h,009h,0B4h,0CDh,025h,0D2h,0E7h,0F9h ; A5/F#5/F#3
+        db 2, 10, 08Fh,007h,093h,0A7h,009h,0B6h,0CDh,025h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0CBh,023h,0D2h,0FFh ; -/-/G3
+        db 2, 6, 09Fh,0BFh,0CBh,023h,0D7h,0FFh
+        db 5, 11, 081h,007h,091h,0AFh,008h,0B4h,0CBh,023h,0D2h,0E6h,0F6h ; B5/G5/G3
+        db 2, 10, 081h,007h,091h,0AFh,008h,0B4h,0CBh,023h,0D7h,0FFh
+        db 5, 10, 081h,007h,091h,0AFh,008h,0B4h,0CBh,023h,0D2h,0FFh ; B5/G5/G3
+        db 2, 10, 081h,007h,093h,0AFh,008h,0B6h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0AAh,00Ah,0B4h,0CAh,02Fh,0D2h,0E6h,0F6h ; G5/E5/D3
+        db 2, 10, 08Fh,008h,091h,0AAh,00Ah,0B4h,0CAh,02Fh,0D7h,0FFh
+        db 5, 10, 08Fh,008h,091h,0AAh,00Ah,0B4h,0CBh,023h,0D2h,0FFh ; G5/E5/G3
+        db 2, 10, 08Fh,008h,093h,0AAh,00Ah,0B6h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0A2h,00Eh,0B4h,0C7h,02Ah,0D2h,0E7h,0F6h ; E5/B4/E3
+        db 2, 11, 08Ah,00Ah,093h,0A2h,00Eh,0B6h,0C7h,02Ah,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0A2h,00Eh,0B4h,0CAh,038h,0D2h,0E7h,0F9h ; D5/B4/B2
+        db 2, 10, 08Eh,00Bh,093h,0A2h,00Eh,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 086h,00Dh,091h,0A3h,015h,0B4h,0C7h,035h,0D2h,0E6h,0F6h ; C5/E4/C3
+        db 2, 10, 086h,00Dh,093h,0A3h,015h,0B6h,0C7h,035h,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,035h,0D2h,0FFh ; -/-/C3
+        db 2, 6, 09Fh,0BFh,0C7h,035h,0D7h,0FFh
+        db 5, 11, 08Eh,00Bh,091h,0AEh,012h,0B4h,0CAh,02Fh,0D2h,0E7h,0F6h ; D5/F#4/D3
+        db 2, 11, 08Eh,00Bh,093h,0AEh,012h,0B6h,0CAh,02Fh,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CAh,02Fh,0D2h,0FFh ; -/-/D3
+        db 2, 6, 09Fh,0BFh,0CAh,02Fh,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; E5/G4/E3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 6, 09Fh,0BFh,0C7h,02Ah,0D2h,0FFh ; -/-/E3
+        db 2, 6, 09Fh,0BFh,0C7h,02Ah,0D7h,0FFh
+        db 5, 11, 087h,009h,091h,0AEh,00Fh,0B4h,0CDh,025h,0D2h,0E7h,0F6h ; F#5/A4/F#3
+        db 2, 11, 087h,009h,093h,0AEh,00Fh,0B6h,0CDh,025h,0D7h,0E7h,0FAh
+        db 5, 6, 09Fh,0BFh,0CDh,025h,0D2h,0FFh ; -/-/F#3
+        db 2, 6, 09Fh,0BFh,0CDh,025h,0D7h,0FFh
+        db 5, 11, 08Fh,008h,091h,0A2h,00Eh,0B4h,0CBh,023h,0D2h,0E6h,0F6h ; G5/B4/G3
+        db 2, 10, 08Fh,008h,091h,0A2h,00Eh,0B4h,0CBh,023h,0D7h,0FFh
+        db 5, 10, 08Fh,008h,091h,0A2h,00Eh,0B4h,0CBh,023h,0D2h,0FFh ; G5/B4/G3
+        db 2, 10, 08Fh,008h,093h,0A2h,00Eh,0B6h,0CBh,023h,0D7h,0FFh
+        db 5, 11, 087h,009h,091h,0A2h,00Eh,0B4h,0CAh,038h,0D2h,0E7h,0F6h ; F#5/B4/B2
+        db 2, 11, 087h,009h,091h,0A2h,00Eh,0B4h,0CAh,038h,0D7h,0E7h,0FAh
+        db 5, 10, 087h,009h,091h,0A2h,00Eh,0B4h,0CAh,038h,0D2h,0FFh ; F#5/B4/B2
+        db 2, 10, 087h,009h,093h,0A2h,00Eh,0B6h,0CAh,038h,0D7h,0FFh
+        db 5, 11, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C7h,02Ah,0D2h,0E6h,0F6h ; E5/G4/E3
+        db 2, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C7h,02Ah,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0CAh,038h,0D2h,0FFh ; E5/G4/B2
+        db 2, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0CAh,038h,0D7h,0FFh
+        db 5, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C7h,02Ah,0D2h,0FFh ; E5/G4/E3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 5, 4, 09Fh,0BFh,0DFh,0FFh ; -/-/-
+        db 2, 4, 09Fh,0BFh,0DFh,0FFh
         db 0FFh                    ; loop
 
 ; ---- 勝利のファンファーレ / C major ----
 BGM_CLEAR:
-        db 15, 10, 086h,00Dh,091h,0ADh,011h,0B5h,0C7h,035h,0D3h,0FFh ; C5/G4/C3
-        db 15, 10, 08Ah,00Ah,091h,0A6h,00Dh,0B5h,0C7h,035h,0D3h,0FFh ; E5/C5/C3
-        db 15, 10, 08Fh,008h,091h,0AAh,00Ah,0B5h,0CBh,023h,0D3h,0FFh ; G5/E5/G3
-        db 15, 10, 08Bh,006h,091h,0AFh,008h,0B5h,0C7h,035h,0D3h,0FFh ; C6/G5/C3
-        db 15, 10, 08Fh,008h,091h,0AAh,00Ah,0B5h,0C1h,028h,0D3h,0FFh ; G5/E5/F3
-        db 15, 10, 08Bh,006h,091h,0AFh,008h,0B5h,0C1h,028h,0D3h,0FFh ; C6/G5/F3
-        db 30, 10, 085h,005h,091h,0ABh,006h,0B5h,0CBh,023h,0D3h,0FFh ; E6/C6/G3
-        db 60, 10, 08Bh,006h,091h,0AFh,008h,0B5h,0C7h,035h,0D3h,0FFh ; C6/G5/C3
+        db 4, 11, 086h,00Dh,091h,0A3h,015h,0B4h,0C7h,035h,0D2h,0E7h,0F6h ; C5/E4/C3
+        db 2, 11, 086h,00Dh,093h,0A3h,015h,0B6h,0C7h,035h,0D7h,0E7h,0FAh
+        db 4, 10, 08Ah,00Ah,091h,0ADh,011h,0B4h,0C7h,035h,0D2h,0FFh ; E5/G4/C3
+        db 2, 10, 08Ah,00Ah,093h,0ADh,011h,0B6h,0C7h,035h,0D7h,0FFh
+        db 4, 11, 08Fh,008h,091h,0A6h,00Dh,0B4h,0C7h,035h,0D2h,0E7h,0F6h ; G5/C5/C3
+        db 2, 11, 08Fh,008h,093h,0A6h,00Dh,0B6h,0C7h,035h,0D7h,0E7h,0FAh
+        db 10, 10, 08Bh,006h,091h,0AAh,00Ah,0B4h,0C7h,02Ah,0D2h,0FFh ; C6/E5/E3
+        db 2, 10, 08Bh,006h,093h,0AAh,00Ah,0B6h,0C7h,02Ah,0D7h,0FFh
+        db 10, 11, 087h,008h,091h,0A6h,00Dh,0B4h,0CBh,021h,0D2h,0E7h,0F6h ; G#5/C5/G#3
+        db 2, 11, 087h,008h,093h,0A6h,00Dh,0B6h,0CBh,021h,0D7h,0E7h,0FAh
+        db 10, 10, 088h,007h,091h,0AEh,00Bh,0B4h,0C0h,01Eh,0D2h,0FFh ; A#5/D5/A#3
+        db 2, 10, 088h,007h,093h,0AEh,00Bh,0B6h,0C0h,01Eh,0D7h,0FFh
+        db 16, 11, 08Bh,006h,091h,0AAh,00Ah,0B4h,0C7h,035h,0D2h,0E6h,0F6h ; C6/E5/C3
+        db 2, 10, 08Bh,006h,091h,0AAh,00Ah,0B4h,0C7h,035h,0D7h,0FFh
+        db 34, 10, 08Bh,006h,091h,0AAh,00Ah,0B4h,0C7h,035h,0D2h,0FFh ; C6/E5/C3
+        db 2, 10, 08Bh,006h,093h,0AAh,00Ah,0B6h,0C7h,035h,0D7h,0FFh
         db 0FFh                    ; loop
 
 BGM_END:        dw BGM_CLEAR
 
 ; ---- 効果音 ----
-; 射撃: 短い下降レーザー (PSG tone 0 / volume register 90h)
+; 射撃: 鋭いツイン・レーザー風 (PSG tone 0 / volume register 90h)
 SE_SHOT:
-        db 3, 8Eh,0Fh,91h
-        db 3, 8Ch,12h,93h
-        db 3, 8Fh,18h,96h
-        db 2, 91h,9Ch
+        db 3, 85h,06h,90h
+        db 3, 8Ah,08h,91h
+        db 3, 8Fh,0Bh,92h
+        db 3, 84h,10h,94h
+        db 3, 8Ch,16h,98h
         db 1, 9Fh
         db 0
 
-; 爆発: PSG noise channel 3 (noise volume register F0h)
+; 爆発: 重低音ノイズ減衰 (PSG noise channel 3)
 SE_EXPL:
-        db 2, 0E7h,0F5h
-        db 2, 0E6h,0F7h
-        db 2, 0E4h,0F9h
-        db 2, 0E2h,0FBh
+        db 2, 0E6h,0F1h
+        db 2, 0E7h,0F2h
+        db 2, 0E6h,0F4h
+        db 2, 0E7h,0F6h
+        db 2, 0E6h,0F9h
+        db 2, 0E7h,0FCh
         db 1, 0FFh
         db 0
 
-; パワーアップ: 上昇アルペジオ
+; パワーアップ: コナミ風きらめきアルペジオ
 SE_PWUP:
-        db 3, 8Bh,06h,91h
-        db 3, 87h,08h,93h
-        db 3, 87h,04h,95h
-        db 3, 83h,03h,91h
+        db 3, 8Eh,0Bh,91h
+        db 3, 87h,09h,91h
+        db 3, 8Fh,07h,91h
+        db 3, 8Fh,05h,91h
+        db 3, 87h,09h,92h
+        db 3, 8Fh,07h,92h
+        db 3, 8Fh,05h,91h
+        db 3, 87h,04h,91h
         db 1, 9Fh
         db 0

@@ -1,40 +1,4 @@
 """Generate original three-voice PSG music for Makyou Kishi Paradion."""
-
-# =========================================================================
-# ■ このスクリプトに音楽を仕込む人 (別 AI) へのルール
-# =========================================================================
-# [出力]
-# - 生成物は src/sideb/sound_data.asm (直接編集しないこと。このスクリプトが上書きする)
-# - ビルド (build.ps1) が毎回 python tools/musicgen.py を実行する
-#
-# [必須ラベルと使われ方] (src/sideb/data.asm STAGE_TABLE / stage.asm が dw 参照)
-#   BGM_FIELD1 : Stage 1 (魔界の森) 道中曲
-#   BGM_ROCK   : Stage 2 (荒涼たる岩場) 道中曲
-#   BGM_FIELD2 : Stage 3-5 (墓地 / 火山 / 幻魔城) 道中曲
-#   BGM_BOSS   : ボス戦曲 (全ステージ共通)
-#   BGM_CLEAR  : ステージクリア / エンディング (BGM_END は BGM_CLEAR への別名)
-#   SE_SHOT / SE_EXPL / SE_PWUP : 効果音 (SE_DATA に生 db で記述)
-#   ★ラベル名を変えたり削除しないこと。アセンブルが壊れる。
-#
-# [SCORES の書き方]
-#   "ラベル": {
-#       "title": ..., "ticks": 1 音符のフレーム数 (15=120BPM, 12=150BPM, 10=180BPM),
-#       "lead" / "harmony" / "bass": 空白区切りの音符列 (3 声は同長,
-#           音名は C4..B8, # は半音上げ, 休符は "-"),
-#       "drums": ノイズを鳴らす音符インデックスのタプル,
-#       "lead_volume" / "harmony_volume" / "bass_volume" / "drum_volume":
-#           PSG 音量 0-15 (★小さいほど大きい。0=最大, 0Fh=消音),
-#       "durations": (省略可) 音符毎の長さを個別指定するタプル
-#   }
-# - PSG は E9h への書込みで L/R 同時に出る。3 矩形波 + ノイズの 4ch 構成
-# - 1 エントリ = [継続フレーム数][書込みバイト数][PSG バイト列...]、
-#   末尾の db 0FFh がループ点 (V_BGM_LOOP) になる。曲は必ずループさせること
-# - 音域目安: lead C5-C6 / harmony G3-G5 / bass A2-G3 (SN76489 の分周は 12bit)
-#
-# [SE_DATA の書き方]
-#   1 tick 毎に 1 エントリ ([バイト数][PSG バイト列...]) を消費, db 0 = 終端
-#   音量レジスタは ch0=90h / ch1=B0h / ch2=D0h / ノイズ=F0h
-# =========================================================================
 from pathlib import Path
 import re
 
@@ -42,108 +6,189 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src" / "sideb" / "sound_data.asm"
 
-# One step is an eighth note. The generator writes all three tone channels and
-# the noise-channel volume each step, so rests and percussion cannot stick.
+# Note tokens:
+#   "A4" etc. : Attack a note (automatic envelope decay on the tail of the step)
+#   "~"       : Tie / sustain previous note smoothly without re-attacking
+#   "-"       : Rest (silence)
+# Drum spec:
+#   Can be a string of per-step characters ('.'=rest, 'k'=kick, 's'=snare, 'h'=hi-hat)
+#   or a tuple of step indices (backward-compatible).
+
 SCORES = {
     "BGM_FIELD1": {
-        "title": "魔界の森 / A minor, 4-bar adventure theme",
-        "ticks": 15,  # eighth note at 120 BPM (60 frames/second)
-        "lead": "E5 A5 G5 E5 C5 E5 A4 C5 C5 A4 F4 A4 C5 A4 G4 E4 "
-                "G4 C5 E5 G5 E5 D5 C5 G4 D5 B4 G4 B4 D5 C5 B4 G4",
-        "harmony": "A4 E5 C5 E5 A4 E5 C5 E5 F4 C5 A4 C5 F4 C5 A4 C5 "
-                   "E4 G4 C5 G4 E4 G4 C5 G4 D4 G4 B3 G4 D4 G4 B3 G4",
-        "bass": "A2 A2 E3 A2 F3 F3 C3 F3 C3 C3 G3 C3 G3 G3 C3 G3 "
-               "G3 G3 D3 G3 E3 E3 B2 E3 D3 D3 A2 D3 B2 G3 D3 G3",
-        "drums": (0, 8, 16, 24),
+        "title": "魔界の森 (Stage 1) / A minor, 8-bar Knightmare-style march",
+        "ticks": 8,
+        "lead": (
+            "A4 - C5 - E5 ~ ~ D5 C5 - B4 - C5 - A4 - "
+            "F5 ~ ~ E5 D5 - C5 - B4 ~ ~ ~ E5 - - - "
+            "A4 - C5 - E5 ~ ~ D5 C5 - B4 - C5 - E5 - "
+            "F5 - E5 - D5 - C5 - B4 ~ G#4 ~ A4 ~ ~ - "
+        ),
+        "harmony": (
+            "C4 - E4 - A4 ~ ~ B4 A4 - G#4 - A4 - E4 - "
+            "A4 ~ ~ G4 F4 - E4 - G#4 ~ ~ ~ B4 - - - "
+            "C4 - E4 - A4 ~ ~ B4 A4 - G#4 - A4 - C5 - "
+            "D5 - C5 - B4 - A4 - G#4 ~ E4 ~ C4 ~ ~ - "
+        ),
+        "bass": (
+            "A3 A3 E3 A3 A3 A3 E3 A3 A3 A3 E3 A3 A3 A3 E3 G3 "
+            "F3 F3 C3 F3 D3 D3 A3 D3 E3 E3 B2 E3 E3 F3 G3 G#3 "
+            "A3 A3 E3 A3 A3 A3 E3 A3 A3 A3 E3 A3 A3 A3 G3 E3 "
+            "D3 D3 A3 D3 F3 F3 C3 F3 E3 E3 B2 E3 A3 E3 A3 - "
+        ),
+        "drums": (
+            "k.h.s.h.k.k.s.h."
+            "k.h.s.h.k.s.k.s."
+            "k.h.s.h.k.k.s.h."
+            "k.h.s.h.k.s.k..."
+        ),
         "lead_volume": 1,
-        "harmony_volume": 5,
-        "bass_volume": 3,
-        "drum_volume": 9,
+        "harmony_volume": 4,
+        "bass_volume": 2,
+        "drum_volume": 6,
     },
     "BGM_FIELD2": {
-        "title": "墓地から魔城 / D minor, darker 4-bar theme",
-        "ticks": 12,  # eighth note at 150 BPM
-        "lead": "A4 D5 F5 A5 G5 F5 E5 D5 C5 F5 A5 C6 A5 G5 F5 E5 "
-                "D5 A5 D6 C6 A5 F5 G5 A5 E5 C#5 A4 C#5 E5 G5 F5 E5",
-        "harmony": "F4 A4 D5 A4 F4 A4 D5 A4 F4 A4 C5 A4 F4 A4 C5 A4 "
-                   "F4 A4 D5 A4 F4 A4 D5 A4 E4 G4 C#5 G4 E4 G4 C#5 G4",
-        "bass": "D3 D3 A3 D3 A#2 A#2 F3 A#2 F3 F3 C3 F3 C4 C3 F3 C3 "
-               "G3 G3 D3 G3 A2 A2 E3 A2 A3 A3 E3 A3 A2 A2 E3 A2",
-        "drums": (0, 8, 16, 24),
-        "lead_volume": 1,
-        "harmony_volume": 6,
-        "bass_volume": 3,
-        "drum_volume": 8,
-    },
-    "BGM_BOSS": {
-        "title": "ボス戦 / D minor, driving 4-bar battle theme",
-        "ticks": 10,  # eighth note at 180 BPM
-        "lead": "D5 D5 A4 D5 F5 D5 A4 D5 C5 C5 G4 C5 E5 C5 G4 C5 "
-                "A#4 A#4 F4 A#4 D5 A#4 F4 A#4 A4 A4 E4 A4 C#5 A4 E4 A4",
-        "harmony": "F4 A4 D5 A4 F4 A4 D5 A4 E4 G4 C5 G4 E4 G4 C5 G4 "
-                   "D4 F4 A#4 F4 D4 F4 A#4 F4 C#4 E4 A4 E4 C#4 E4 A4 E4",
-        "bass": "D3 D3 D3 D3 A2 A2 A2 A2 C3 C3 C3 C3 G3 G3 G3 G3 "
-               "A#2 A#2 A#2 A#2 F3 F3 F3 F3 A2 A2 A2 A2 E3 E3 E3 E3",
-        "drums": (0, 4, 8, 12, 16, 20, 24, 28),
-        "lead_volume": 1,
-        "harmony_volume": 6,
-        "bass_volume": 2,
-        "drum_volume": 7,
-    },
-    "BGM_ROCK": {
-        "title": "荒涼たる岩場 / E minor, 4-bar rock theme",
-        "ticks": 13,  # eighth note at about 138 BPM
-        "lead": "E5 B4 E5 G5 F#5 E5 B4 E5 D5 A4 D5 F#5 E5 D5 A4 D5 "
-                "C5 G4 C5 E5 D5 C5 G4 C5 B4 F#4 B4 D5 C5 B4 F#4 B4",
-        "harmony": "G4 B4 E5 B4 G4 B4 E5 B4 A4 D5 F#5 D5 A4 D5 F#5 D5 "
-                   "G4 C5 E5 C5 G4 C5 E5 C5 F#4 B4 D5 B4 F#4 B4 D5 B4",
-        "bass": "E3 E3 B2 E3 G3 G3 D3 G3 D3 D3 A2 D3 A2 A2 E3 A2 "
-               "C3 C3 G3 C3 G3 G3 D3 G3 B2 B2 F#3 B2 E3 E3 B2 E3",
-        "drums": (0, 8, 16, 24),
+        "title": "墓地から魔城 (Stage 3-5) / D minor, Baroque gothic theme",
+        "ticks": 7,
+        "lead": (
+            "D5 ~ F5 E5 D5 - A4 - A#4 ~ D5 C5 A#4 - A4 - "
+            "G4 - A#4 - D5 - G5 - F5 ~ E5 D5 C#5 - A4 - "
+            "D5 ~ F5 E5 D5 - F5 - G5 ~ A#5 A5 G5 - F5 - "
+            "E5 - G5 - F5 - D5 - C#5 ~ B4 C#5 D5 ~ ~ - "
+        ),
+        "harmony": (
+            "F4 ~ A4 G4 F4 - F4 - G4 ~ A#4 A4 G4 - F4 - "
+            "D4 - G4 - A#4 - D5 - A4 ~ G4 F4 E4 - C#4 - "
+            "F4 ~ A4 G4 F4 - A4 - A#4 ~ D5 C5 A#4 - A4 - "
+            "G4 - A#4 - A4 - F4 - E4 ~ G4 E4 F4 ~ ~ - "
+        ),
+        "bass": (
+            "D3 D3 A3 D3 D3 D3 A3 D3 G3 G3 D3 G3 G3 G3 D3 F3 "
+            "E3 E3 A#2 E3 E3 E3 A#2 E3 A3 A3 E3 A3 A3 G3 F3 E3 "
+            "D3 D3 A3 D3 D3 D3 A3 D3 G3 G3 D3 G3 G3 G3 D3 G3 "
+            "A3 A3 E3 A3 A#2 A#2 F3 A#2 A3 A3 E3 A3 D3 A3 D3 - "
+        ),
+        "drums": (
+            "k.h.s.h.k.h.s.h."
+            "k.h.s.h.k.s.s.s."
+            "k.h.s.h.k.h.s.h."
+            "k.s.k.s.k.s.k..."
+        ),
         "lead_volume": 1,
         "harmony_volume": 5,
-        "bass_volume": 3,
-        "drum_volume": 8,
+        "bass_volume": 2,
+        "drum_volume": 6,
+    },
+    "BGM_BOSS": {
+        "title": "ボス戦 / D minor, frantic chromatic battle theme",
+        "ticks": 6,
+        "lead": (
+            "D5 D5 - D5 F5 - D5 - G#5 ~ G5 ~ F5 - D5 - "
+            "A#4 A#4 - A#4 D5 - A#4 - E5 ~ F5 ~ E5 - C#5 - "
+            "D5 D5 - D5 F5 - D5 - G#5 ~ G5 ~ F5 - D5 - "
+            "A#5 - A5 - G5 - F5 - E5 - C#5 - D5 - - - "
+        ),
+        "harmony": (
+            "A4 A4 - A4 D5 - A4 - D5 ~ C#5 ~ D5 - A4 - "
+            "F4 F4 - F4 A#4 - F4 - A#4 ~ A4 ~ G4 - E4 - "
+            "A4 A4 - A4 D5 - A4 - D5 ~ C#5 ~ D5 - A4 - "
+            "D5 - C5 - A#4 - A4 - G4 - E4 - F4 - - - "
+        ),
+        "bass": (
+            "D3 D3 D4 D3 D3 D3 D4 D3 B2 B2 B3 B2 A#2 A#2 A#3 A#2 "
+            "G3 G3 G4 G3 G3 G3 G4 G3 A3 A3 A4 A3 A3 G3 F3 E3 "
+            "D3 D3 D4 D3 D3 D3 D4 D3 B2 B2 B3 B2 A#2 A#2 A#3 A#2 "
+            "G3 G3 F3 F3 E3 E3 D3 D3 A3 A3 A3 A3 D3 - - - "
+        ),
+        "drums": (
+            "k.s.k.s.k.s.k.s."
+            "k.s.k.s.k.s.s.s."
+            "k.s.k.s.k.s.k.s."
+            "k.s.k.s.k.k.s..."
+        ),
+        "lead_volume": 1,
+        "harmony_volume": 4,
+        "bass_volume": 2,
+        "drum_volume": 5,
+    },
+    "BGM_ROCK": {
+        "title": "荒涼たる岩場 (Stage 2) / E minor, syncopated driving rock",
+        "ticks": 7,
+        "lead": (
+            "E5 - B4 E5 G5 ~ F#5 - E5 - D5 B4 D5 ~ ~ - "
+            "C5 - G4 C5 E5 ~ D5 - B4 - A4 G4 B4 ~ ~ - "
+            "E5 - B4 E5 G5 ~ A5 - B5 ~ G5 ~ E5 - D5 - "
+            "C5 - D5 - E5 - F#5 - G5 ~ F#5 ~ E5 ~ ~ - "
+        ),
+        "harmony": (
+            "B4 - G4 B4 E5 ~ D5 - B4 - F#4 D4 F#4 ~ ~ - "
+            "G4 - E4 G4 C5 ~ B4 - G4 - D4 B3 D4 ~ ~ - "
+            "B4 - G4 B4 E5 ~ F#5 - G5 ~ E5 ~ B4 - B4 - "
+            "E4 - F#4 - G4 - A4 - B4 ~ B4 ~ G4 ~ ~ - "
+        ),
+        "bass": (
+            "E3 E3 B2 E3 E3 E3 D3 E3 D3 D3 A3 D3 D3 D3 A3 D3 "
+            "C3 C3 G3 C3 C3 C3 G3 C3 B2 B2 F#3 B2 B2 C3 D3 D#3 "
+            "E3 E3 B2 E3 E3 E3 F#3 G3 G3 G3 D3 G3 E3 E3 B2 E3 "
+            "C3 C3 D3 D3 E3 E3 F#3 F#3 G3 G3 B2 B2 E3 B2 E3 - "
+        ),
+        "drums": (
+            "k.h.s.h.k.k.s.h."
+            "k.h.s.h.k.s.k.s."
+            "k.h.s.h.k.k.s.h."
+            "k.s.k.s.k.s.k..."
+        ),
+        "lead_volume": 1,
+        "harmony_volume": 4,
+        "bass_volume": 2,
+        "drum_volume": 6,
     },
     "BGM_CLEAR": {
         "title": "勝利のファンファーレ / C major",
-        "durations": (15, 15, 15, 15, 15, 15, 30, 60),
-        "lead": "C5 E5 G5 C6 G5 C6 E6 C6",
-        "harmony": "G4 C5 E5 G5 E5 G5 C6 G5",
-        "bass": "C3 C3 G3 C3 F3 F3 G3 C3",
-        "drums": (),
+        "durations": (6, 6, 6, 12, 12, 12, 18, 36),
+        "lead": "C5 E5 G5 C6 G#5 A#5 C6 ~",
+        "harmony": "E4 G4 C5 E5 C5 D5 E5 ~",
+        "bass": "C3 C3 C3 E3 G#3 A#3 C3 ~",
+        "drums": "s.s.s.k.",
         "lead_volume": 1,
-        "harmony_volume": 5,
-        "bass_volume": 3,
-        "drum_volume": 15,
+        "harmony_volume": 4,
+        "bass_volume": 2,
+        "drum_volume": 6,
     },
 }
 
 SE_DATA = r"""; ---- 効果音 ----
-; 射撃: 短い下降レーザー (PSG tone 0 / volume register 90h)
+; 射撃: 鋭いツイン・レーザー風 (PSG tone 0 / volume register 90h)
 SE_SHOT:
-        db 3, 8Eh,0Fh,91h
-        db 3, 8Ch,12h,93h
-        db 3, 8Fh,18h,96h
-        db 2, 91h,9Ch
+        db 3, 85h,06h,90h
+        db 3, 8Ah,08h,91h
+        db 3, 8Fh,0Bh,92h
+        db 3, 84h,10h,94h
+        db 3, 8Ch,16h,98h
         db 1, 9Fh
         db 0
 
-; 爆発: PSG noise channel 3 (noise volume register F0h)
+; 爆発: 重低音ノイズ減衰 (PSG noise channel 3)
 SE_EXPL:
-        db 2, 0E7h,0F5h
-        db 2, 0E6h,0F7h
-        db 2, 0E4h,0F9h
-        db 2, 0E2h,0FBh
+        db 2, 0E6h,0F1h
+        db 2, 0E7h,0F2h
+        db 2, 0E6h,0F4h
+        db 2, 0E7h,0F6h
+        db 2, 0E6h,0F9h
+        db 2, 0E7h,0FCh
         db 1, 0FFh
         db 0
 
-; パワーアップ: 上昇アルペジオ
+; パワーアップ: コナミ風きらめきアルペジオ
 SE_PWUP:
-        db 3, 8Bh,06h,91h
-        db 3, 87h,08h,93h
-        db 3, 87h,04h,95h
-        db 3, 83h,03h,91h
+        db 3, 8Eh,0Bh,91h
+        db 3, 87h,09h,91h
+        db 3, 8Fh,07h,91h
+        db 3, 8Fh,05h,91h
+        db 3, 87h,09h,92h
+        db 3, 8Fh,07h,92h
+        db 3, 8Fh,05h,91h
+        db 3, 87h,04h,91h
         db 1, 9Fh
         db 0
 """
@@ -160,6 +205,9 @@ def divisor(note):
     midi = (int(octave) + 1) * 12 + PITCH[name]
     hz = 440.0 * 2 ** ((midi - 69) / 12)
     value = round(111860 / hz)
+    # If a note is below SN76489's 10-bit divider limit (e.g. A2=1017+), shift up 1 octave
+    while value > 1023:
+        value //= 2
     if not 1 <= value <= 1023:
         raise ValueError(f"note out of SN76489 range: {note}")
     return value
@@ -176,35 +224,84 @@ def tone_bytes(channel, note, volume):
     value = divisor(note)
     latch = (0x80, 0xA0, 0xC0)[channel]
     volume_latch = (0x90, 0xB0, 0xD0)[channel]
-    return [latch | (value & 0x0F), value >> 4, volume_latch | volume]
+    return [latch | (value & 0x0F), value >> 4, volume_latch | min(volume, 15)]
+
+
+def resolve_ties(tokens):
+    """Replace '~' with the preceding active note pitch."""
+    resolved = []
+    current = "-"
+    for t in tokens:
+        if t == "~":
+            resolved.append(current)
+        else:
+            current = t
+            resolved.append(t)
+    return resolved
 
 
 def emit_song(label, score):
-    lead = score["lead"].split()
-    harmony = score["harmony"].split()
-    bass = score["bass"].split()
-    if not (len(lead) == len(harmony) == len(bass)):
+    lead_raw = score["lead"].split()
+    harm_raw = score["harmony"].split()
+    bass_raw = score["bass"].split()
+    if not (len(lead_raw) == len(harm_raw) == len(bass_raw)):
         raise ValueError(f"{label}: voice lengths differ")
+
+    lead = resolve_ties(lead_raw)
+    harmony = resolve_ties(harm_raw)
+    bass = resolve_ties(bass_raw)
+
     durations = score.get("durations", (score.get("ticks", 8),) * len(lead))
     if len(durations) != len(lead):
         raise ValueError(f"{label}: duration count differs from note count")
-    drums = set(score["drums"])
-    if any(index < 0 or index >= len(lead) for index in drums):
-        raise ValueError(f"{label}: drum index outside score")
+
+    drums = score["drums"]
+    if isinstance(drums, str):
+        drum_str = drums.ljust(len(lead), ".")
+    else:
+        if any(index < 0 or index >= len(lead) for index in drums):
+            raise ValueError(f"{label}: drum index outside score")
+        drum_str = "".join("s" if i in set(drums) else "." for i in range(len(lead)))
 
     lines = [f"; ---- {score['title']} ----", f"{label}:"]
-    for index, (melody, chord, low, ticks) in enumerate(zip(lead, harmony, bass, durations)):
-        data = []
-        data += tone_bytes(0, melody, score["lead_volume"])
-        data += tone_bytes(1, chord, score["harmony_volume"])
-        data += tone_bytes(2, low, score["bass_volume"])
-        if index in drums:
-            data += [0xE7, 0xF0 | score["drum_volume"]]
+    for idx, (melody, chord, low, ticks) in enumerate(zip(lead, harmony, bass, durations)):
+        rel_ticks = 2 if ticks >= 5 else 1
+        atk_ticks = max(1, ticks - rel_ticks)
+
+        lead_tied = (idx + 1 < len(lead_raw)) and (lead_raw[idx + 1] == "~")
+        harm_tied = (idx + 1 < len(harm_raw)) and (harm_raw[idx + 1] == "~")
+
+        # Attack phase
+        atk_data = []
+        atk_data += tone_bytes(0, melody, score["lead_volume"])
+        atk_data += tone_bytes(1, chord, score["harmony_volume"])
+        atk_data += tone_bytes(2, low, score["bass_volume"])
+
+        d_char = drum_str[idx]
+        if d_char == "k":
+            atk_data += [0xE6, 0xF0 | score["drum_volume"]]
+        elif d_char == "s":
+            atk_data += [0xE7, 0xF0 | score["drum_volume"]]
+        elif d_char == "h":
+            atk_data += [0xE7, 0xF0 | min(15, score["drum_volume"] + 3)]
         else:
-            data += [0xFF]  # noise channel off between percussion accents
-        note_count = len(data)
+            atk_data += [0xFF]
+
         comment = f" ; {melody}/{chord}/{low}"
-        lines.append(f"        db {ticks}, {note_count}, " + ",".join(map(fmt, data)) + comment)
+        lines.append(f"        db {atk_ticks}, {len(atk_data)}, " + ",".join(map(fmt, atk_data)) + comment)
+
+        # Release / Decay phase
+        rel_data = []
+        rel_data += tone_bytes(0, melody, score["lead_volume"] + (0 if lead_tied else 2))
+        rel_data += tone_bytes(1, chord, score["harmony_volume"] + (0 if harm_tied else 2))
+        rel_data += tone_bytes(2, low, score["bass_volume"] + 5)
+        if d_char == "s":
+            rel_data += [0xE7, 0xF0 | min(15, score["drum_volume"] + 4)]
+        else:
+            rel_data += [0xFF]
+
+        lines.append(f"        db {rel_ticks}, {len(rel_data)}, " + ",".join(map(fmt, rel_data)))
+
     lines.append("        db 0FFh                    ; loop")
     lines.append("")
     return lines
