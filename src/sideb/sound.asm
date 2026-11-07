@@ -71,9 +71,11 @@ sound_update:
 ; 破壊: A, B, HL, F
 ; ------------------------------------------------------------
 snd_tick:
+        call snd_tick_bgm              ; BGM を先に out (SE が後から上書き)
+snd_tick_se:
         ld a,(V_SE_ACT)
         or a
-        jr z,ST_BGM
+        ret z
         ld hl,(V_SE_PTR)
         ld a,(hl)                       ; バイト数
         or a
@@ -90,7 +92,7 @@ SE_FIN:
         xor a
         ld (V_SE_ACT),a
         ret
-ST_BGM:
+snd_tick_bgm:
         ld a,(V_BGM_ACT)
         or a
         ret z

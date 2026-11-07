@@ -88,4 +88,36 @@ do_scroll_shift:
         ld a,(W_TILE_PHASE)
         xor 1
         ld (W_TILE_PHASE),a               ; 8px シフトごとに16pxタイルの行位相反転
+        ; --- 宝箱 / パワーアップを地形と一緒に 8px 下へ流す ---
+        ; (消去パスの後 / 描画パスの前に呼ばれるため, ここでの y 更新は安全)
+        push ix
+        ld ix,O_TBL + O_CHEST*O_LEN
+        ld a,(ix+0)
+        or a
+        jr z,SCL_PW
+        ld a,(ix+3)
+        add a,8
+        cp 168
+        jr c,SCL_CS
+        xor a
+        ld (ix+0),a                     ; 画面下へ抜けた宝箱は取り逃しで消滅
+        jr SCL_PW
+SCL_CS: ld (ix+3),a
+SCL_PW: ld ix,O_TBL + O_PWUPS*O_LEN
+        ld b,2
+SCL_PL: ld a,(ix+0)
+        or a
+        jr z,SCL_PN
+        ld a,(ix+3)
+        add a,8
+        cp 176
+        jr c,SCL_PS
+        xor a
+        ld (ix+0),a                     ; 画面下へ抜けたアイテムは消滅
+        jr SCL_PN
+SCL_PS: ld (ix+3),a
+SCL_PN: ld de,O_LEN
+        add ix,de
+        djnz SCL_PL
+        pop ix
         ret

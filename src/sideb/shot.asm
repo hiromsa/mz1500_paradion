@@ -216,8 +216,8 @@ EU_N:   ld de,O_LEN
 ; ------------------------------------------------------------
 ; 敵の位置から照準弾生成
 ; 入力: IX = 発射元敵スロット
-; 出力: 空き敵弾スロットがあれば敵直下 (y +12) に生成
-;       (発射方向は自機の左右で attr bit2 に反映)
+; 出力: 空き敵弾スロットがあれば敵直下 (y +12) に生成。
+;       自機との x 差から方向 (attr bit2) と 2 倍速 (attr bit3) を設定
 ; 破壊: A, F (BC, DE, HL, IX は保存)
 ; ------------------------------------------------------------
 spawn_eshot_at:
@@ -243,12 +243,26 @@ spawn_eshot_at:
         ld a,1                          ; state
         ld (de),a
         inc de
-        ld a,(O_TBL+2)                  ; 自機 x2 - 敵 x2 → 発射方向
-        sub c
-        ld c,04Ah                       ; attr (バンク1 + 1x1, 右)
-        jr nc,SESH_D
-        ld c,046h                       ; 左 (bit2=0)
-SESH_D: ld a,c
+        ; 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit3
+        ld a,(O_TBL+2)
+        ld h,a
+        ld a,c                          ; A = 弾 x2 (発射位置)
+        sub h                           ; A = 弾 - 自機 (mod 256)
+        jr c,SESH_NG                    ; 弾が自機より左 → 自機へ右進
+        ; 弾が自機より右 → 自機へ左進 (bit2 = 0)
+        cp 10
+        jr nc,SESH_LF                   ; |dx| >= 10 → 2 倍速
+        ld c,046h                       ; 左, 通常
+        jr SESH_DA
+SESH_LF:ld c,086h                       ; 左, 2 倍速
+        jr SESH_DA
+SESH_NG:neg
+        cp 10
+        jr nc,SESH_RT                   ; |dx| >= 10 → 2 倍速
+        ld c,04Ah                       ; 右, 通常
+        jr SESH_DA
+SESH_RT:ld c,08Eh                       ; 右, 2 倍速
+SESH_DA:ld a,c
         ld (de),a
         inc de
         pop bc

@@ -374,6 +374,8 @@ SRF_BANK:
         dec hl
         dec hl
         ld a,(hl)                       ; A = bank
+        inc hl
+        ld e,(hl)                       ; E = 開始コード (pop de で失われるため再取得)
         add a,a
         add a,a
         add a,a                         ; bank × 8
@@ -466,6 +468,7 @@ SRF_DONE:
         pop hl                          ; 呼び出し側の HL 復帰
         ret
 SRF_COPY8:
+        ld hl,(W_RFSRC)                 ; 転送元 (HL は直前の処理で窓アドレスになっている)
         ld a,(hl)
         ld (ix+0),a
         inc hl

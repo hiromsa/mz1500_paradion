@@ -176,13 +176,15 @@ msgs_update:
         cp 0FFh
         ret z
 MSGU_ACT:
-        ; 表示中は行 9-13 の「文字セルのみ」PCG 属性 OFF を毎フレーム再 assert
-        ; (スプライトの消去パスが属性を表示 ON に戻し文字を隠すため)
-        call msgs_attr_off
+        ; 表示中は行 9-13 の PCG 属性 (文字セルだけ OFF) を毎フレーム再 assert
+        ; (スプライトの消去パスが PCG 属性を表示 ON に戻すため。
+        ;  色属性は消去パスが触らないため表示開始時の 1 回だけでよい)
+        call msgs_attr_pcg
         ld hl,W_MSGTIMER
         call timer_dec
         ret nz
         call clear_messages
+        call msgs_attr_off              ; 消滅時に空白セルの PCG を表示 ON へ戻す
         ld hl,0FFFFh
         ld (W_MSGTIMER),hl
         ret
@@ -197,9 +199,21 @@ MSGU_ACT:
 ; 破壊: A, B, C, DE, HL, F
 ; ------------------------------------------------------------
 msgs_attr_off:
+        call msgs_attr_pcg              ; パス 1 (PCG 属性) → パス 2 (色属性)
+msgs_attr_col:
         ld a,(W_FIELDCOL)
         ld c,a                          ; C = フィールド色 (メッセージの背景色)
-        ; パス 1: PCG 属性を文字セルだけ表示 OFF (空白セルは表示 ON へ戻す)
+
+; ------------------------------------------------------------
+; メッセージ領域 (行 9-13) の PCG 属性だけを毎フレーム再 assert
+; (色属性は消去パスが触らないため表示開始時の 1 回でよい。
+;  全属性パスの毎フレーム実行はフレーム時間の ~40% を消費していた)
+; 入力: なし
+; 出力: 行 9-13 の 200 セルのうちテキストが入るセルだけ PCG 属性 00h,
+;       空白セルは PCGATTR_BANK0 (地形表示)
+; 破壊: A, B, DE, HL, F
+; ------------------------------------------------------------
+msgs_attr_pcg:
         ld hl,0DC00h + 9*40
         ld de,VRAM_TEXT + 9*40
         ld b,200
@@ -214,6 +228,7 @@ MSGAO_S:ld a,PCGATTR_BANK0
 MSGAO_N:inc hl
         inc de
         djnz MSGAO_L
+        ret
         ; パス 2: 色属性の背景 (bit0-2) を文字セルだけフィールド色へ
         ld hl,VRAM_ATTR + 9*40
         ld de,VRAM_TEXT + 9*40
@@ -258,7 +273,7 @@ itemmsg_update:
         ret z                           ; 非表示
         push af
         ld c,8
-        call msg_attr_off               ; 表示中は行 8 属性 OFF を再 assert
+        call msg_attr_pcg               ; 表示中は行 8 の PCG 属性だけ再 assert
         pop af
         dec a
         ld (W_ITMTIMER),a
@@ -361,4 +376,46 @@ MAO_T:  ld a,(hl)
 MAO_TN: inc hl
         inc de
         djnz MAO_T
+        ret
+
+; ------------------------------------------------------------
+; 1 行分の PCG 属性だけを再 assert (毎フレーム用の軽量版)
+; 入力: C = 行番号
+; 出力: その行の文字セルだけ PCG 属性 00h, 空白セルは PCGATTR_BANK0
+;       (色属性は消去パスが触らないため表示開始時の msg_attr_off で十分)
+; 破壊: A, B, DE, HL, F
+; ------------------------------------------------------------
+msg_attr_pcg:
+        ld l,c
+        ld h,0
+        add hl,hl                       ; 2r
+        push hl
+        add hl,hl
+        add hl,hl                       ; 8r
+        ld e,l
+        ld d,h                          ; DE = 8r
+        pop hl                          ; 2r
+        add hl,hl
+        add hl,hl
+        add hl,hl
+        add hl,hl                       ; 32r
+        add hl,de                       ; HL = 40r
+        ld bc,VRAM_TEXT
+        add hl,bc                       ; HL = テキストの行先頭
+        ex de,hl                        ; DE = テキストポインタ
+        ld hl,00C00h                    ; テキスト(0D000h+) → PCG 属性は +0C00h
+        add hl,de                       ; HL = PCG 属性の行先頭 (0DC00h+)
+        ex de,hl                        ; DE = PCG 属性ポインタ, HL = テキスト
+        ld b,40
+MAOP_L: ld a,(hl)
+        or a
+        jr z,MAOP_S
+        xor a
+        ld (de),a                       ; 文字の裏だけ PCG を消す
+        jr MAOP_N
+MAOP_S: ld a,PCGATTR_BANK0
+        ld (de),a                       ; 空白セルは地形をそのまま見せる
+MAOP_N: inc hl
+        inc de
+        djnz MAOP_L
         ret
