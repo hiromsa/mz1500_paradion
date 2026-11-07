@@ -282,8 +282,9 @@ ERASEATTR2X2:
 ; ------------------------------------------------------------
 ; スプライト PCG の透過色 (黒) をフィールド色へ一括置換
 ; 入力: A = フィールド色 (PCG 3bit, STAGE_TABLE +F)
-; 出力: SPRC_TBL の各範囲 (バンク 1-3) について 3 プレーン全 0 の
-;       ピクセルを A 色へ書換え, 終了時に D000h-EFFFh を VRAM & I/O へ戻す
+; 出力: SPRC_TBL の各範囲 (バンク 1-3) について 黒 (3 プレーン全 0) の
+;       ピクセルを A 色へ書換え (ピクセル単位), 終了時に D000h-EFFFh を
+;       VRAM & I/O へ戻す
 ; 破壊: A, B, D, E, IX, F (C, HL は保存)
 ; 注意: OUT E5h 選択中は VRAM/MMIO (E002 の V-BLANK 読み含む) が
 ;       見えないため, init_stage の
@@ -291,13 +292,36 @@ ERASEATTR2X2:
 ;       (約 0.5 秒かかるためステージ切替時の一瞬の静止になる)
 ; ------------------------------------------------------------
 sprite_recolor_field:
+        push hl                         ; 呼び出し側の HL を保護
         ld c,a                          ; C = フィールド色
+        ; フィールド色 (3bit) を各プレーンの置換マスク (FFh/00h) に展開
+        ; (bit0=B, bit1=R, bit2=G — 立っている色成分のプレーンだけ黒を塗る)
+        ld a,c
+        and 001h
+        ld a,0FFh
+        jr nz,SRF_MB
+        xor a
+SRF_MB: ld (W_RFMASK),a                 ; B プレーン用マスク
+        ld a,c
+        and 002h
+        ld a,0FFh
+        jr nz,SRF_MR
+        xor a
+SRF_MR: ld (W_RFMASK+1),a               ; R プレーン用マスク
+        ld a,c
+        and 004h
+        ld a,0FFh
+        jr nz,SRF_MG
+        xor a
+SRF_MG: ld (W_RFMASK+2),a               ; G プレーン用マスク
         ld hl,SPRC_TBL
+        ld (W_RFTBL),hl                 ; テーブルポインタはワーク RAM に退避
+                                        ; (SRF_ROW で HL を作業に使うため)
 SRF_BANK:
+        ld hl,(W_RFTBL)
         ld a,(hl)
         or a
-        jr z,SRF_DONE                   ; 終端 (bank = 0)
-        push hl                         ; テーブル位置退避
+        jp z,SRF_DONE                   ; 終端 (bank = 0)
         inc hl
         ld e,(hl)                       ; 開始コード
         inc hl
@@ -319,43 +343,62 @@ SRF_BANK:
         add hl,de                       ; HL = PCG ウィンドウ上の開始アドレス
         push hl
         pop ix                          ; IX = 走査位置
-        pop hl                          ; テーブル位置 (bank バイト) へ戻す
+        ld hl,(W_RFTBL)
         inc hl
         inc hl
         inc hl                          ; 次のエントリ (bank) へ
+        ld (W_RFTBL),hl
 SRF_CODE:
         push bc
         ld d,8                          ; 1 文字 = 8 行
 SRF_ROW:
+        ; 3 プレーンを読み, 黒 (3 プレーン全 0) のピクセルビットを求める
         ld a,001h
         out (PORT_PCG_B),a              ; B プレーン選択
-        ld e,(ix+0)
+        ld l,(ix+0)                     ; L = B プレーン
         ld a,002h
         out (PORT_PCG_B),a              ; R プレーン選択
-        ld a,(ix+0)
-        or e                            ; B|R
-        ld e,a
+        ld h,(ix+0)                     ; H = R プレーン
         ld a,003h
         out (PORT_PCG_B),a              ; G プレーン選択
-        ld a,(ix+0)
-        or e                            ; B|R|G
-        jr nz,SRF_NROW                  ; 黒でなければ次の行へ
-        ; 3 プレーン全 0 (黒) → フィールド色の立っているプレーンだけ FFh
-        bit 0,c
-        jr z,SRF_W1
-        ld a,001h
-        out (PORT_PCG_B),a
-        ld (ix+0),0FFh
-SRF_W1: bit 1,c
-        jr z,SRF_W2
+        ld e,(ix+0)                     ; E = G プレーン
+        ld a,l
+        or h
+        or e
+        cpl
+        ld h,a                          ; H = 黒ピクセルマスク (R 値は下で再読)
+        ; B プレーン: B | (黒 & B マスク)
+        ld a,h
+        ld a,(W_RFMASK)
+        and h
+        or l
+        push af                         ; 新 B 値を退避
+        ; R プレーン: R | (黒 & R マスク)
         ld a,002h
         out (PORT_PCG_B),a
-        ld (ix+0),0FFh
-SRF_W2: bit 2,c
-        jr z,SRF_NROW
+        ld l,(ix+0)                     ; R 値を再読
+        ld a,(W_RFMASK+1)
+        and h
+        or l
+        push af                         ; 新 R 値を退避
+        ; G プレーン: G | (黒 & G マスク) → その場で書換
         ld a,003h
         out (PORT_PCG_B),a
-        ld (ix+0),0FFh
+        ld l,(ix+0)                     ; G 値を再読
+        ld a,(W_RFMASK+2)
+        and h
+        or l
+        ld (ix+0),a                     ; G プレーン書換
+        ; R プレーン書換
+        ld a,002h
+        out (PORT_PCG_B),a
+        pop af
+        ld (ix+0),a
+        ; B プレーン書換
+        ld a,001h
+        out (PORT_PCG_B),a
+        pop af
+        ld (ix+0),a
 SRF_NROW:
         inc ix
         dec d
@@ -363,8 +406,9 @@ SRF_NROW:
         pop bc
         dec b
         jr nz,SRF_CODE
-        jr SRF_BANK
+        jp SRF_BANK
 SRF_DONE:
         out (PORT_PCG_OFF),a            ; PCG モード解除 (E6h)
-        out (PORT_VRAM),a               ; D000h-EFFFh を VRAM & I/O へ戻す
+        out (PORT_VRAM),a
+        pop hl                          ; 呼び出し側の HL 復帰
         ret

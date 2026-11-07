@@ -72,6 +72,7 @@ init_stage:
         ld (W_SEEXPL),de
         inc hl
         ld a,(hl)                       ; +F: フィールド色 (スプライト黒の置換色)
+        ld (W_FIELDCOL),a               ; メッセージ背景色としても使用
         push af                         ; sprite_recolor_field まで退避
         xor a
         ld (W_MAPROW),a

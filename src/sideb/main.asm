@@ -88,10 +88,14 @@ defc W_SPAWNMAX = W_WORKTOP + 009h   ; 雑魚の同時出現上限 (= ステー�
 defc W_CHESTCNT = W_WORKTOP + 00Ah   ; 宝箱出現タイマ
 defc W_ITMTIMER = W_WORKTOP + 00Bh   ; アイテム名表示残りフレーム (0 = 非表示)
 defc W_FRESH = W_WORKTOP + 00Ch      ; 1 = ゲーム開始直後 (GAME START 表示用)
+defc W_FIELDCOL = W_WORKTOP + 00Dh   ; 現ステージのフィールド色 (PCG 置換 + メッセージ背景)
+defc W_RFTBL = W_WORKTOP + 00Eh      ; 2B sprite_recolor_field 用テーブルポインタ退避
+defc W_RFMASK = W_WORKTOP + 010h     ; 3B recolor 用プレーン別置換マスク (B/R/G)
 ; ---- ゲームバランス定数 ----
 defc CHEST_FIRST_DELAY = 240        ; ステージ開始から最初の宝箱まで (フレーム)
 defc CHEST_SPAWN_INT = 250          ; 宝箱の再出現間隔 (約 4 秒, 8bit 収まり)
 defc ITEMMSG_FRAMES = 90            ; アイテム名メッセージ表示時間 (1.5 秒)
+defc PWUP_LIFE = 240                ; アイテムの寿命 (出現後約 4 秒で消滅)
 defc PLRINV_RESPAWN = 180           ; 復活後の無敵時間 (3 秒, 点滅)
 defc PLRINV_SHIELD = 60             ; シールド被弾時の無敵時間
 
