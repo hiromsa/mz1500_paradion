@@ -15,6 +15,9 @@
 ; ------------------------------------------------------------
 init_stage:
         ld (W_STAGE),a
+        ld a,ST_FIELD
+        ld (W_STATE),a                    ; GK_CLEAR / GK_GAMEOVER からの復帰
+        ld a,(W_STAGE)
         dec a
         ld l,a
         ld h,0
@@ -75,6 +78,14 @@ init_stage:
         ld bc,7
         ld (hl),0
         ldir
+        ; 前ステージの敵/弾/アイテム/爆発と描画セル参照を持ち越さない
+        ld hl,O_TBL
+        ld de,O_TBL+1
+        ld bc,O_SLOTS*O_LEN-1
+        ld (hl),0
+        ldir
+        xor a
+        ld (W_SCROLLEDUE),a              ; 古いスクロール要求も破棄
         ; プレイフィールド構築
         ld hl,MIRROR_TOP
         ld b,FIELD_ROWS

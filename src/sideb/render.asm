@@ -98,13 +98,15 @@ RO_D1:
         ld a,(ix+4)
         bit 0,(ix+1)
         jr z,RO_DNAN
-        ld e,(ix+5)
-        srl e
-        srl e
-        srl e
-        and 1
+        ld a,(ix+5)
+        srl a
+        srl a
+        srl a
+        and 1                           ; (t >> 3) & 1
         add a,a
-        add a,a
+        add a,a                         ; animation frame offset = 0 or 4
+        ld e,a
+        ld a,(ix+4)                     ; preserve the sprite's base PCG code
         add a,e
 RO_DNAN:
         ld b,a                          ; コード

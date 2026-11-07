@@ -18,7 +18,6 @@ STAGE_TABLE:
         dw SE_SHOT
         dw SE_EXPL
         db T_S1_GRASS
-        db 0
 ; --- Stage 2: 荒涼たる岩場 ---
         db 6
         db 75
@@ -27,11 +26,10 @@ STAGE_TABLE:
         db 80
         dw MAP_ROWS_S2
         db 8
-        dw BGM_FIELD1
+        dw BGM_ROCK
         dw SE_SHOT
         dw SE_EXPL
         db T_S2_GROUND
-        db 0
 ; --- Stage 3: 呪われた墓地 ---
         db 5
         db 65
@@ -44,7 +42,6 @@ STAGE_TABLE:
         dw SE_SHOT
         dw SE_EXPL
         db T_S3_GROUND
-        db 0
 ; --- Stage 4: 灼熱の火山 ---
         db 5
         db 55
@@ -57,7 +54,6 @@ STAGE_TABLE:
         dw SE_SHOT
         dw SE_EXPL
         db T_S4_GROUND
-        db 0
 ; --- Stage 5: 幻魔城・最上階 ---
         db 4
         db 48
@@ -70,7 +66,6 @@ STAGE_TABLE:
         dw SE_SHOT
         dw SE_EXPL
         db T_S5_FLOOR
-        db 0
 
 defc STAGE_LEN = 16
 

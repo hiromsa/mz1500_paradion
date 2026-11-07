@@ -50,6 +50,8 @@ defc SP_GARG0 = 00h
 defc SP_GARG1 = 04h
 defc SP_WISP0 = 08h
 defc SP_WISP1 = 0Ch
+defc SP_GARG_ITEM0 = 10h
+defc SP_WISP_ITEM0 = 18h
 
 ; --- bank 3 ---
 defc SP_BOSS_F1 = 00h

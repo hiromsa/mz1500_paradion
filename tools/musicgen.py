@@ -6,12 +6,12 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src" / "sideb" / "sound_data.asm"
 
-# Notes are eighth-note steps. The generator writes all three tone channels and
+# One step is an eighth note. The generator writes all three tone channels and
 # the noise-channel volume each step, so rests and percussion cannot stick.
 SCORES = {
     "BGM_FIELD1": {
         "title": "魔界の森 / A minor, 4-bar adventure theme",
-        "ticks": 8,
+        "ticks": 15,  # eighth note at 120 BPM (60 frames/second)
         "lead": "E5 A5 G5 E5 C5 E5 A4 C5 C5 A4 F4 A4 C5 A4 G4 E4 "
                 "G4 C5 E5 G5 E5 D5 C5 G4 D5 B4 G4 B4 D5 C5 B4 G4",
         "harmony": "A4 E5 C5 E5 A4 E5 C5 E5 F4 C5 A4 C5 F4 C5 A4 C5 "
@@ -26,7 +26,7 @@ SCORES = {
     },
     "BGM_FIELD2": {
         "title": "墓地から魔城 / D minor, darker 4-bar theme",
-        "ticks": 7,
+        "ticks": 12,  # eighth note at 150 BPM
         "lead": "A4 D5 F5 A5 G5 F5 E5 D5 C5 F5 A5 C6 A5 G5 F5 E5 "
                 "D5 A5 D6 C6 A5 F5 G5 A5 E5 C#5 A4 C#5 E5 G5 F5 E5",
         "harmony": "F4 A4 D5 A4 F4 A4 D5 A4 F4 A4 C5 A4 F4 A4 C5 A4 "
@@ -41,7 +41,7 @@ SCORES = {
     },
     "BGM_BOSS": {
         "title": "ボス戦 / D minor, driving 4-bar battle theme",
-        "ticks": 5,
+        "ticks": 10,  # eighth note at 180 BPM
         "lead": "D5 D5 A4 D5 F5 D5 A4 D5 C5 C5 G4 C5 E5 C5 G4 C5 "
                 "A#4 A#4 F4 A#4 D5 A#4 F4 A#4 A4 A4 E4 A4 C#5 A4 E4 A4",
         "harmony": "F4 A4 D5 A4 F4 A4 D5 A4 E4 G4 C5 G4 E4 G4 C5 G4 "
@@ -54,9 +54,24 @@ SCORES = {
         "bass_volume": 2,
         "drum_volume": 7,
     },
+    "BGM_ROCK": {
+        "title": "荒涼たる岩場 / E minor, 4-bar rock theme",
+        "ticks": 13,  # eighth note at about 138 BPM
+        "lead": "E5 B4 E5 G5 F#5 E5 B4 E5 D5 A4 D5 F#5 E5 D5 A4 D5 "
+                "C5 G4 C5 E5 D5 C5 G4 C5 B4 F#4 B4 D5 C5 B4 F#4 B4",
+        "harmony": "G4 B4 E5 B4 G4 B4 E5 B4 A4 D5 F#5 D5 A4 D5 F#5 D5 "
+                   "G4 C5 E5 C5 G4 C5 E5 C5 F#4 B4 D5 B4 F#4 B4 D5 B4",
+        "bass": "E3 E3 B2 E3 G3 G3 D3 G3 D3 D3 A2 D3 A2 A2 E3 A2 "
+               "C3 C3 G3 C3 G3 G3 D3 G3 B2 B2 F#3 B2 E3 E3 B2 E3",
+        "drums": (0, 8, 16, 24),
+        "lead_volume": 1,
+        "harmony_volume": 5,
+        "bass_volume": 3,
+        "drum_volume": 8,
+    },
     "BGM_CLEAR": {
         "title": "勝利のファンファーレ / C major",
-        "durations": (10, 10, 10, 10, 10, 10, 20, 36),
+        "durations": (15, 15, 15, 15, 15, 15, 30, 60),
         "lead": "C5 E5 G5 C6 G5 C6 E6 C6",
         "harmony": "G4 C5 E5 G5 E5 G5 C6 G5",
         "bass": "C3 C3 G3 C3 F3 F3 G3 C3",

@@ -6,7 +6,7 @@
 ; 敵更新 (スロット O_ENEMIES..+5)
 ; 入力: なし
 ; 出力: 種別に応じた移動と消滅
-;       (1 = ガーゴイル: 降下 + 水平往復 / 2 = ウィスプ: 直進 + 照準弾)
+;       (1/3 = ガーゴイル / 2/4 = ウィスプ, 3/4 はアイテム持ち)
 ; 破壊: A, B, IX, F
 ; ------------------------------------------------------------
 enemies_update:
@@ -18,6 +18,8 @@ NU_L:   ld a,(ix+0)
         inc (ix+5)                      ; t++
         cp 1                            ; 種別 1 = ガーゴイル
         jr z,EN_GARG
+        cp 3                            ; 種別 3 = アイテム持ちガーゴイル
+        jr z,EN_GARG
         call enemy_move_wisp            ; 種別 2 = ウィスプ
         jr NU_N
 EN_GARG:
@@ -28,14 +30,22 @@ NU_N:   ld de,O_LEN
         ret
 
 ; ------------------------------------------------------------
-; ウィスプ (種別 2) 移動: 直進降下, t = 48 で照準弾 1 発
+; ウィスプ (種別 2/4) 移動: 直進降下, t = 48 で照準弾 1 発
 ; 入力: IX = 敵スロット
-; 出力: y +2 (y >= 168 で消滅) / t = 48 で spawn_eshot_at 実行
+; 出力: stage1-2 は y +1, 以降 y +2 (y >= 168 で消滅), t=48 で照準弾
 ; 破壊: A, B, F
 ; ------------------------------------------------------------
 enemy_move_wisp:
+        ld a,(W_STAGE)
+        cp 3
+        jr nc,EMW_FAST
+        ld a,(ix+3)
+        inc a                           ; stage 1-2 は 1px/frame
+        jr EMW_POS
+EMW_FAST:
         ld a,(ix+3)
         add a,2
+EMW_POS:
         cp 168                          ; 2x2 の下段が行 21 を超える前に消滅
         jr nc,EMW_KILL
         ld (ix+3),a
@@ -49,14 +59,22 @@ EMW_KILL:
         ret
 
 ; ------------------------------------------------------------
-; ガーゴイル (種別 1) 移動: 降下 + 16t ごとに水平方向反転
+; ガーゴイル (種別 1/3) 移動: 降下 + 16t ごとに水平方向反転
 ; 入力: IX = 敵スロット
-; 出力: y +2 (y >= 168 で消滅), x 往復 (画面端では反転して停止)
+; 出力: stage1-2 は y +1, 以降 y +2 (y >= 168 で消滅), x 往復
 ; 破壊: A, F
 ; ------------------------------------------------------------
 enemy_move_gargoyle:
+        ld a,(W_STAGE)
+        cp 3
+        jr nc,EMG_FAST
+        ld a,(ix+3)
+        inc a                           ; stage 1-2 は 1px/frame
+        jr EMG_POS
+EMG_FAST:
         ld a,(ix+3)
         add a,2
+EMG_POS:
         cp 168
         jr nc,EMG_KILL
         ld (ix+3),a
@@ -126,23 +144,44 @@ SPW_SPAWN:
         ld (ix+2),a
         xor a
         ld (ix+3),a                     ; y = 0
+        ; 1/8 をアイテム持ちとして出現させる (乱数下位3bit = 0)
+        ld d,0
+        ld a,c
+        and 7
+        jr nz,SPW_TYPE
+        ld d,2                          ; 種別に +2 → carrier (3/4)
+SPW_TYPE:
         ld a,c
         rrca
         and 1
         jr z,SPW_WISP
         ; ガーゴイル
         ld a,1
+        add a,d
         ld (ix+0),a
         ld a,089h                       ; attr (バンク2 + anim)
         ld (ix+1),a
+        ld a,d
+        add a,a
+        add a,a
+        add a,a                         ; carrier pattern is +16
+        ld e,a
         ld a,SP_GARG0
+        add a,e
         jr SPW_SET
 SPW_WISP:
         ld a,2
+        add a,d
         ld (ix+0),a
         ld a,089h
         ld (ix+1),a
+        ld a,d
+        add a,a
+        add a,a
+        add a,a
+        ld e,a
         ld a,SP_WISP0
+        add a,e
 SPW_SET:
         ld (ix+4),a
         ld (ix+5),0
@@ -153,11 +192,22 @@ SPW_SET:
 ; 敵撃破処理
 ; 入力: HL = 敵スロット先頭
 ; 出力: 敵消滅 + 敵位置に爆発生成 + 100 点加算
-;       + 1/8 でパワーアップ ドロップ
+;       アイテム持ち敵 (種別3/4) のみパワーアップをドロップ
 ; 破壊: A, B, DE, HL, F (IX は保存)
 ; ------------------------------------------------------------
 kill_enemy:
         push ix
+        ld a,(hl)                       ; carrier flag before clearing state
+        cp 3
+        jr z,KE_CARRIER
+        cp 4
+        jr z,KE_CARRIER
+        xor a                           ; ordinary enemy does not drop an item
+        jr KE_FLAG
+KE_CARRIER:
+        ld a,1                           ; carrier guarantees its marked item drop
+KE_FLAG:
+        push af
         xor a
         ld (hl),a                       ; 敵消滅
         push hl
@@ -172,10 +222,10 @@ kill_enemy:
         call spawn_expl_scratch
         ld de,0100h
         call add_score
-        ld a,r
-        and 7
-        jr nz,KE_RET                    ; 7/8 はドロップなし
-        ; パワーアップドロップ (1/8)
+        pop af
+        or a
+        jr z,KE_RET
+        ; アイテム持ちを倒したときだけ必ずドロップ
         ld a,O_PWUPS
         ld b,2
         call FIND_SLOT

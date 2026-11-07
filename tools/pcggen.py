@@ -63,9 +63,9 @@ b0.put(0x04, [  # S1 flowers
 b0.put(0x05, [  # S1 rock (solid)
     "........", "..WWWW..", ".WKKWKW.", "WWKWWKWW",
     "WWWWWKWW", ".WWWWWW.", "..WWWW..", "........"])
-b0.put(0x08, [  # S2 dry ground
-    "WWWWWWWW", "WKKWKWWW", "WWWWKWWW", "WKWWWWWK",
-    "WWWWKWWW", "WWWKWWWW", "WKKWWKWW", "WWWWWWWW"])
+b0.put(0x08, [  # S2 slate floor: cool, low-contrast stone with sparse cracks
+    "BBBBBBBB", "BBBKBBBB", "BBCBBBBB", "BBBBBBBB",
+    "BBBBKBBB", "BBBBBCBB", "BBBBBBBB", "BBBBBBBB"])
 b0.put(0x09, [  # S2 boulder (solid)
     "..WWWW..", ".WKWWKW.", "WWWWWWKW", "WKWWWWWW",
     "WWKWWWKW", "WWWWWKWW", ".WWWWWW.", "..KKKK.."])
@@ -242,6 +242,19 @@ GARGOYLE2 = center16([
 ])
 b2.put16(0x00, GARGOYLE)
 b2.put16(0x04, GARGOYLE2)
+
+def with_medallion(rows):
+    """Overlay a bright gold/red pickup emblem on a carrier variant."""
+    art = [list(row) for row in rows]
+    for y, mark in ((9, ".Y."), (10, "YRY"), (11, "YYY"), (12, ".Y.")):
+        x = (16 - len(mark)) // 2
+        art[y][x:x + len(mark)] = mark
+    return ["".join(row) for row in art]
+
+GARGOYLE_CARRY = with_medallion(GARGOYLE)
+GARGOYLE_CARRY2 = with_medallion(GARGOYLE2)
+b2.put16(0x10, GARGOYLE_CARRY)    # guaranteed item carrier
+b2.put16(0x14, GARGOYLE_CARRY2)
 WISP = center16([
     ".......C........",
     "......CWC.......",
@@ -280,6 +293,10 @@ WISP2 = center16([
 ])
 b2.put16(0x08, WISP)
 b2.put16(0x0C, WISP2)
+WISP_CARRY = with_medallion(WISP)
+WISP_CARRY2 = with_medallion(WISP2)
+b2.put16(0x18, WISP_CARRY)
+b2.put16(0x1C, WISP_CARRY2)
 
 # ---------------------------------------------------------------- bank 3: boss
 b3 = Bank()
@@ -442,7 +459,8 @@ def emit_map_inc(path):
             ('SP_SHOT', 0x10), ('SP_ESHOT', 0x11),
             ('SP_EXPL0', 0x12), ('SP_EXPL1', 0x16), ('SP_EXPL2', 0x1A), ('SP_EXPL3', 0x1E),
             ('SP_PW_TWIN', 0x22), ('SP_PW_SPEED', 0x23), ('SP_PW_SHIELD', 0x24), ('SP_PW_LIFE', 0x25)],
-        2: [('SP_GARG0', 0x00), ('SP_GARG1', 0x04), ('SP_WISP0', 0x08), ('SP_WISP1', 0x0C)],
+        2: [('SP_GARG0', 0x00), ('SP_GARG1', 0x04), ('SP_WISP0', 0x08), ('SP_WISP1', 0x0C),
+            ('SP_GARG_ITEM0', 0x10), ('SP_WISP_ITEM0', 0x18)],
         3: [('SP_BOSS_F1', 0x00), ('SP_BOSS_F2', 0x10),
             ('SP_BOSS2_F1', 0x20), ('SP_BOSS2_F2', 0x30)],
     }
