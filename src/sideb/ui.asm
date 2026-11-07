@@ -94,8 +94,8 @@ show_msg:
         push hl
         add hl,hl
         add hl,hl                       ; 8r
-        ld b,l
-        ld c,h                          ; BC = 8r
+        ld b,h
+        ld c,l                          ; BC = 8r (LD B,L/LD C,H は HL のバイトスワップになるため)
         pop hl                          ; 2r
         add hl,hl
         add hl,hl
