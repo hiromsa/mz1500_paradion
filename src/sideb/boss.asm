@@ -12,9 +12,9 @@
 boss_update:
         ld a,(W_BOSSMODE)
         or a
-        jr z,boss_move_enter
+        jp z,boss_move_enter
         dec a
-        jr z,boss_move_fight
+        jp z,boss_move_fight
         ; 形態2: 往復速度アップ (t を 2 ずつ進めてから攻撃処理へ)
         ld a,(W_BOSS+5)
         add a,2
@@ -22,9 +22,9 @@ boss_update:
         ; ↓ fall through → boss_fire
 
 ; ------------------------------------------------------------
-; ボス攻撃タイマ → 照準弾 1 発 (ボス中央下)
+; ボス攻撃タイマ → 照準弾 3 発 (自機へ向かって飛んでいく)
 ; 入力: なし
-; 出力: W_BOSSFIRE -1, 0 で攻撃間隔を再セットし敵弾生成
+; 出力: W_BOSSFIRE -1, 0 で攻撃間隔を再セットし敵弾 3 発生成
 ; 破壊: A, B, DE, IX, F
 ; ------------------------------------------------------------
 boss_fire:
@@ -37,24 +37,59 @@ boss_fire:
 BF_SHOT:
         ld a,(W_BOSSFIREINT)
         ld (W_BOSSFIRE),a
-        ; 照準弾 (ボス中央下)
+        ; 照準弾 3 発: 中央 / 左 -4 (x2 = 8px) / 右 +4
+        xor a
+        call BF_ONE
+        ld a,0FCh
+        call BF_ONE
+        ld a,4
+BF_ONE:                                 ; A = ボス中央からの x2 オフセット (sign)
+        push af
         ld a,O_ESHOTS
         ld b,4
         call FIND_SLOT
-        ret c
+        pop af
+        ret c                           ; 空きスロットなし → この弾はスキップ
+        push af
         ld a,1
         ld (ix+0),a
-        ld a,04Ah
+        ld a,04Ah                       ; attr ベース (bit2/bit3 は照準で設定)
         ld (ix+1),a
         ld a,(W_BOSS+2)
         add a,6                         ; x2 = ボス中央
-        ld (ix+2),a
+        ld e,a
+        pop af
+        add a,e                         ; x2 = ボス中央 + オフセット
+        cp 152                          ; x2 クランプ (0-152)
+        jr c,BF_X1
+        ld a,152
+BF_X1:  ld (ix+2),a
         ld a,(W_BOSS+3)
         add a,28                        ; y = ボス下端
         ld (ix+3),a
         ld a,SP_ESHOT
         ld (ix+4),a
         ld (ix+5),0
+        ; --- 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit3
+        ld a,(O_TBL+2)
+        ld e,a
+        ld a,(ix+2)
+        sub e                           ; A = 弾 - 自機 (mod 256)
+        jr c,BF_NEG                     ; 弾が自機より左 → 自機へ右進
+        ; 弾が自機より右 → 自機へ左進 (bit2 = 0)
+        cp 10
+        jr nc,BF_LF                     ; |dx| >= 10 → 2 倍速
+        ld a,042h                       ; 左, 通常
+        jr BF_SET
+BF_LF:  ld a,082h                       ; 左, 2 倍速
+        jr BF_SET
+BF_NEG: neg
+        cp 10
+        jr nc,BF_RT                     ; |dx| >= 10 → 2 倍速
+        ld a,04Ah                       ; 右, 通常
+        jr BF_SET
+BF_RT:  ld a,08Ah                       ; 右, 2 倍速
+BF_SET: ld (ix+1),a                     ; 方向 / 速度ビットを反映
         ; +6/+7 (描画済みセル) は消去パスが管理するのでここでは触らない
         ret
 

@@ -174,7 +174,9 @@ EU_ADDY:
         cp 171
         jr nc,EU_KILL
         ld (ix+3),a
-        ; x 方向 (attr bit2 = 右, 2px 単位)
+        ; x 方向 (attr bit2 = 右 / bit3 = 2 倍速, x2 単位)
+        bit 3,(ix+1)
+        jr nz,EU_F2                     ; bit3 = 1 → 照準弾は 2px/移動で飛ぶ
         bit 2,(ix+1)
         jr z,EU_L2
         ld a,(ix+2)
@@ -187,6 +189,19 @@ EU_L2:  ld a,(ix+2)
         or a
         jr z,EU_SX                      ; 左端 (x2=0) で停止
         dec a
+        jr EU_SX
+EU_F2:  bit 2,(ix+1)
+        jr z,EU_F2L
+        ld a,(ix+2)
+        add a,2                         ; 右 2px
+        cp 153
+        jr c,EU_SX
+        ld a,152
+        jr EU_SX
+EU_F2L: ld a,(ix+2)
+        sub 2                           ; 左 2px
+        jr nc,EU_SX
+        xor a
 EU_SX:  ld (ix+2),a
         inc (ix+5)
         jr EU_N

@@ -76,7 +76,7 @@ RO_DRAW_PASS:
 RO_D1:
         ld a,(ix+0)
         or a
-        jr z,RO_DSKIP
+        jp z,RO_DSKIP
         ; 自機 (スロット 0) は無敵中 4 フレーム毎に描画を止めて点滅させる
         ld a,b
         cp O_SLOTS                      ; ループ先頭 1 回 = 自機スロット?
@@ -86,6 +86,26 @@ RO_D1:
         jr z,RO_DY
         and 4                           ; 4 フレーム周期で消灯
         jr z,RO_DSKIP
+        ; メッセージ表示中は中央表示領域 (行 8-13) に重なるスプライトを
+        ; 描画しない (テキストがスプライトの裏に隠れて文字が読めないため。
+        ; 消去パスが前フレームのセルを消すので、描画だけをスキップすればよい)
+        ld a,(W_MSGTIMER+1)
+        cp 0FFh                       ; アイドル (FFFFh) ではない → 表示中
+        jr nz,RO_DMSH
+        ld a,(W_MSGTIMER)
+        cp 0FFh
+        jr nz,RO_DMSH
+        ld a,(W_ITMTIMER)
+        or a
+        jr z,RO_DY                    ; どちらも非表示 → 通常描画
+RO_DMSH:
+        ; 重なり条件: 49 <= y <= 111 (16x16 が行 8-13 の y=64..111 に触れる)
+        ld a,(ix+3)
+        sub 49
+        jr c,RO_DY                    ; y < 49 → 領域より上 → 描画
+        ld a,(ix+3)
+        cp 112
+        jr c,RO_DSKIP                 ; 49 <= y < 112 → スキップ (消す)
 RO_DY:  ld a,(ix+3)
         cp 176                          ; y >= 176 は画面外
         jr nc,RO_DSKIP
@@ -137,7 +157,8 @@ RO_D1X1:
 RO_DSKIP:
         ld de,O_LEN
         add ix,de
-        djnz RO_D1
+        dec b
+        jp nz,RO_D1
         ret
 
 ; ------------------------------------------------------------

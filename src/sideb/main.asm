@@ -91,6 +91,8 @@ defc W_FRESH = W_WORKTOP + 00Ch      ; 1 = ゲーム開始直後 (GAME START 表
 defc W_FIELDCOL = W_WORKTOP + 00Dh   ; 現ステージのフィールド色 (PCG 置換 + メッセージ背景)
 defc W_RFTBL = W_WORKTOP + 00Eh      ; 2B sprite_recolor_field 用テーブルポインタ退避
 defc W_RFMASK = W_WORKTOP + 010h     ; 3B recolor 用プレーン別置換マスク (B/R/G)
+defc W_RFSRC = W_WORKTOP + 013h      ; 2B PCG 復元転送の読み出しポインタ
+defc W_RFDP = W_WORKTOP + 015h       ; 2B SPRC_SRC のカーソル
 ; ---- ゲームバランス定数 ----
 defc CHEST_FIRST_DELAY = 240        ; ステージ開始から最初の宝箱まで (フレーム)
 defc CHEST_SPAWN_INT = 250          ; 宝箱の再出現間隔 (約 4 秒, 8bit 収まり)
@@ -126,3 +128,4 @@ defc ST_ENDING = 5
         include "sideb/data.asm"
         include "sideb/map_data.asm"
         include "sideb/sound_data.asm"
+include "sideb/pcg_restore.asm"      ; スプライト PCG 復元データ (video.asm 用, 18KB)

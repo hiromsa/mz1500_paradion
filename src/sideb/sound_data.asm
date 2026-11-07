@@ -557,34 +557,34 @@ BGM_END:        dw BGM_CLEAR
 ; ---- 効果音 ----
 ; 射撃: 鋭いツイン・レーザー風 (PSG tone 0 / volume register 90h)
 SE_SHOT:
-        db 3, 85h,06h,90h
-        db 3, 8Ah,08h,91h
-        db 3, 8Fh,0Bh,92h
-        db 3, 84h,10h,94h
-        db 3, 8Ch,16h,98h
-        db 1, 9Fh
+        db 3, 3, 085h,006h,090h
+        db 3, 3, 08Ah,008h,091h
+        db 3, 3, 08Fh,00Bh,092h
+        db 3, 3, 084h,010h,094h
+        db 3, 3, 08Ch,016h,098h
+        db 1, 1, 09Fh
         db 0
 
 ; 爆発: 重低音ノイズ減衰 (PSG noise channel 3)
 SE_EXPL:
-        db 2, 0E6h,0F1h
-        db 2, 0E7h,0F2h
-        db 2, 0E6h,0F4h
-        db 2, 0E7h,0F6h
-        db 2, 0E6h,0F9h
-        db 2, 0E7h,0FCh
-        db 1, 0FFh
+        db 2, 2, 0E6h,0F1h
+        db 2, 2, 0E7h,0F2h
+        db 2, 2, 0E6h,0F4h
+        db 2, 2, 0E7h,0F6h
+        db 2, 2, 0E6h,0F9h
+        db 2, 2, 0E7h,0FCh
+        db 1, 1, 0FFh
         db 0
 
 ; パワーアップ: コナミ風きらめきアルペジオ
 SE_PWUP:
-        db 3, 8Eh,0Bh,91h
-        db 3, 87h,09h,91h
-        db 3, 8Fh,07h,91h
-        db 3, 8Fh,05h,91h
-        db 3, 87h,09h,92h
-        db 3, 8Fh,07h,92h
-        db 3, 8Fh,05h,91h
-        db 3, 87h,04h,91h
-        db 1, 9Fh
+        db 3, 3, 08Eh,00Bh,091h
+        db 3, 3, 087h,009h,091h
+        db 3, 3, 08Fh,007h,091h
+        db 3, 3, 08Fh,005h,091h
+        db 3, 3, 087h,009h,092h
+        db 3, 3, 08Fh,007h,092h
+        db 3, 3, 08Fh,005h,091h
+        db 3, 3, 087h,004h,091h
+        db 1, 1, 09Fh
         db 0

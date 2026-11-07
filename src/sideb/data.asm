@@ -99,6 +99,15 @@ SPRC_TBL:
         db 3, 0A0h, 011h                ; bank3: ボス5 形態2 A0h-B0h
         db 3, 0C0h, 020h                ; bank3: ボス4 C0h-DFh
         db 0                            ; 終端
+; --- 復元データ (pcg_restore.asm) の src 先頭 (SPRC_TBL エントリ順に対応) ---
+SPRC_SRC:
+        dw RF_SEG_B1                    ; bank1: 自機/弾/爆発/アイテム
+        dw RF_SEG_B2                    ; bank2: 雑魚 6 種 + 宝箱
+        dw RF_SEG_B3                    ; bank3: ボス1 + ボス5 形態1
+        dw RF_SEG_B3                    ; bank3: ボス2
+        dw RF_SEG_B3                    ; bank3: ボス3
+        dw RF_SEG_B3                    ; bank3: ボス5 形態2
+        dw RF_SEG_B3                    ; bank3: ボス4
 
 ; ---- 各種テーブル ----
 PWUP_TBL:       db SP_PW_TWIN, SP_PW_SPEED, SP_PW_SHIELD, SP_PW_LIFE

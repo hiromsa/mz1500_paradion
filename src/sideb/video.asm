@@ -291,17 +291,30 @@ ERASEATTR2X2:
 ;       VRAM 転送完了直後 (描画 / メッセージの前) に 1 回だけ呼ぶこと
 ;       (約 0.5 秒かかるためステージ切替時の一瞬の静止になる)
 ; ------------------------------------------------------------
+; ------------------------------------------------------------
+; スプライト PCG 復元 + 透過色 (黒) → フィールド色置換 (統合処理)
+; 入力: A = フィールド色 (PCG 3bit, STAGE_TABLE +F)
+; 出力: SPRC_TBL の各範囲 (バンク 1-3) を初期データ (SPRC_SRC, pcggen 生成)
+;       から PCG-RAM へ転送しつつ, 黒 (3 プレーン全 0) のピクセルを
+;       A 色へ書換え (ピクセル単位)。終了時に D000h-EFFFh を VRAM & I/O へ
+;       戻す。復元するのは前の面で黒→地面色に塗った絵が残り, 次の面で
+;       黒として検出できず透過色が前の面の色のままになるバグへの対策
+; 破壊: A, B, D, E, HL, IX, F (C と呼び出し側 HL は push/pop で保護)
+; 注意: OUT E5h 選択中は VRAM/MMIO (E002 の V-BLANK 読み含む) が見えない
+;       ため, init_stage の VRAM 転送完了直後 (描画/メッセージの前) に
+;       1 回だけ呼ぶこと (約 0.2 秒 = ステージ切替時の一瞬の静止)
+; ------------------------------------------------------------
 sprite_recolor_field:
         push hl                         ; 呼び出し側の HL を保護
         ld c,a                          ; C = フィールド色
-        ; フィールド色 (3bit) を各プレーンの置換マスク (FFh/00h) に展開
-        ; (bit0=B, bit1=R, bit2=G — 立っている色成分のプレーンだけ黒を塗る)
+; フィールド色 (3bit) を各プレーンの置換マスク (FFh/00h) に展開
+; (bit0=B, bit1=R, bit2=G — 立っている色成分のプレーンだけ黒を塗る)
         ld a,c
         and 001h
         ld a,0FFh
         jr nz,SRF_MB
         xor a
-SRF_MB: ld (W_RFMASK),a                 ; B プレーン用マスク
+SRF_MB: ld (W_RFMASK),a                ; B プレーン用マスク
         ld a,c
         and 002h
         ld a,0FFh
@@ -315,42 +328,82 @@ SRF_MR: ld (W_RFMASK+1),a               ; R プレーン用マスク
         xor a
 SRF_MG: ld (W_RFMASK+2),a               ; G プレーン用マスク
         ld hl,SPRC_TBL
-        ld (W_RFTBL),hl                 ; テーブルポインタはワーク RAM に退避
-                                        ; (SRF_ROW で HL を作業に使うため)
+        ld (W_RFTBL),hl                 ; 置換対象テーブルポインタ (HL は置換で使う)
+        ld hl,SPRC_SRC
+        ld (W_RFDP),hl                  ; 復元データの src カーソル (SPRC_TBL 並順)
 SRF_BANK:
         ld hl,(W_RFTBL)
         ld a,(hl)
         or a
         jp z,SRF_DONE                   ; 終端 (bank = 0)
         inc hl
-        ld e,(hl)                       ; 開始コード
+        ld e,(hl)                       ; E = 開始コード
         inc hl
-        ld b,(hl)                       ; コード数
+        ld b,(hl)                       ; B = コード数
+        inc hl
+        ld (W_RFTBL),hl                 ; テーブルポインタ次エントリへ
+; src base = SPRC_SRC カーソル + start × 24
+        ld hl,(W_RFDP)
+        ld a,(hl)
+        inc hl
+        ld h,(hl)
+        ld l,a                          ; HL = 復元データ base
+        push hl                         ; base を退避
+        ld a,e                          ; A = start
+        ld e,a
+        ld d,0
+        ld h,d
+        ld l,e                          ; HL = start
+        add hl,hl                       ; × 2
+        add hl,hl                       ; × 4
+        add hl,hl                       ; × 8
+        push hl                         ; start × 8 を退避
+        add hl,hl                       ; × 16
+        pop de                          ; DE = start × 8
+        add hl,de                       ; HL = start × 24
+        pop de                          ; DE = base
+        add hl,de                       ; HL = src = base + start × 24
+        ld (W_RFSRC),hl                 ; 転送用 src ポインタ (SRF_COPY8 が進める)
+        ld hl,(W_RFDP)
+        inc hl
+        inc hl
+        ld (W_RFDP),hl                  ; SPRC_SRC カーソル次エントリへ
+; PCG 窓アドレス = D000h + bank × 800h + start × 8
+        ld hl,(W_RFTBL)
+        dec hl
+        dec hl
+        dec hl
+        ld a,(hl)                       ; A = bank
         add a,a
         add a,a
-        add a,a                         ; bank * 8
+        add a,a                         ; bank × 8
         ld h,a
-        ld l,0                          ; HL = bank * 800h
-        ld d,0                          ; DE = 開始コード
+        ld l,0                          ; HL = bank × 800h
+        ld d,0
         sla e
         rl d
         sla e
         rl d
         sla e
-        rl d                            ; DE = 開始コード * 8
+        rl d                            ; DE = start × 8
         add hl,de
         ld de,0D000h
         add hl,de                       ; HL = PCG ウィンドウ上の開始アドレス
         push hl
-        pop ix                          ; IX = 走査位置
-        ld hl,(W_RFTBL)
-        inc hl
-        inc hl
-        inc hl                          ; 次のエントリ (bank) へ
-        ld (W_RFTBL),hl
+        pop ix                           ; IX = 走査位置
 SRF_CODE:
-        push bc
-        ld d,8                          ; 1 文字 = 8 行
+        push bc                         ; C (フィールド色) と B (残り文字数) を退避
+; --- 復元転送: 初期データ 24 バイト (B/R/G × 8 行) を PCG へ ---
+        ld a,001h
+        out (PORT_PCG_B),a              ; B プレーン選択
+        call SRF_COPY8
+        ld a,002h
+        out (PORT_PCG_B),a              ; R プレーン選択
+        call SRF_COPY8
+        ld a,003h
+        out (PORT_PCG_B),a              ; G プレーン選択
+        call SRF_COPY8
+        ld d,8                          ; D = 行カウンタ (1 文字 = 8 行)
 SRF_ROW:
         ; 3 プレーンを読み, 黒 (3 プレーン全 0) のピクセルビットを求める
         ld a,001h
@@ -411,4 +464,31 @@ SRF_DONE:
         out (PORT_PCG_OFF),a            ; PCG モード解除 (E6h)
         out (PORT_VRAM),a
         pop hl                          ; 呼び出し側の HL 復帰
+        ret
+SRF_COPY8:
+        ld a,(hl)
+        ld (ix+0),a
+        inc hl
+        ld a,(hl)
+        ld (ix+1),a
+        inc hl
+        ld a,(hl)
+        ld (ix+2),a
+        inc hl
+        ld a,(hl)
+        ld (ix+3),a
+        inc hl
+        ld a,(hl)
+        ld (ix+4),a
+        inc hl
+        ld a,(hl)
+        ld (ix+5),a
+        inc hl
+        ld a,(hl)
+        ld (ix+6),a
+        inc hl
+        ld a,(hl)
+        ld (ix+7),a
+        inc hl
+        ld (W_RFSRC),hl
         ret
