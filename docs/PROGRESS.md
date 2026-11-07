@@ -11,7 +11,7 @@
 - 調査にはエミュレータ CLI の拡張を使用 (詳細は docs/DEBUG_STATE.md §12):
   - `--dump-at FRAME@ADDR,LEN` (指定フレーム時点のメモリダンプ)
   - `--watch-write` の重複排除をアドレス別 (PC,value) に変更しログへ HL/BC/DE/SP を併記
-  - `tmp/code_compare.py` で実行時 RAM コード領域と `out/sideb.bin` を diff
+  - `tools/code_compare.py` で実行時 RAM コード領域と `out/sideb.bin` を diff
 - 検証: frame 989 時点コード領域 diff 0。↑押下で W_KEYS=01h (上)・y 140→112 に移動・
   x 不変 (左移動なし)。"STAGE" バナーが画面行10中央に表示されるようになった。
 - `input.asm` の TEMP DEBUG ストア (B0E9h/B0EAh/B0EBh) を削除。

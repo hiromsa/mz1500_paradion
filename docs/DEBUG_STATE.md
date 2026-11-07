@@ -217,7 +217,7 @@ QD A→B差し替えで3600フレーム動作し、tick/ステージタイマ進
 - MZT: 128バイトヘッダ (attr=01h, name 17B を 0Dh 埋め, size/load/exec は LE16 ×3 @0x12) + 本体
 - エミュレータは .mzt を挿入時に QD ブロックへ変換 (BSD 1026B 分割)
 - 「迷宮への扉」実サンプルのブロック: A5+flag+size(LE16)+data+CRC16-ARC、SYNC=0x16
-- 解析ツール: `tmp\mztparse.py` / `tmp\qdfparse.py`
+- 解析ツール: `tools\mztparse.py` / `tools\qdfparse.py`
 - A面の PCG 転送は「チャンクテーブル (db plane / dw src / dw dst)」方式で 12 セグメント転送
 - B面ゲームはチェインロードで RAM 1200h に読まれるため、A面のメモリ (2000h-8B00h の PCG 元データ) は残骸として残る
   (fill_row の暴走インデックスがここを読んでも「ゴミタイル」になるだけ)
@@ -252,6 +252,9 @@ docs/DESIGN.md 参照。5面 (魔界の森/岩場/墓地/火山/幻魔城)、ボ
 - BGM は現在5曲 (1面/2面/3-5面/ボス/勝利)。譜面は `tools/musicgen.py` で管理。
 
 ### 10a. 調査用ツール・注意点 (2026-11 追加)
+
+- **開発環境・CLI デバッグ手法のまとめは `docs\DEVELOPMENT.md` を参照**
+  (エミュレータの場所、MZ-1500 仕様要点、CLI オプション、コード破壊検出手順、落とし穴集)
 
 - `tools/ppm2png.py`: CLI の --ppm 出力を PNG 化 (2x 拡大) して画面を確認する
 - `tools/dumpanalyze.py`: 2 回の --dump (VRAM/ミラー) を比較解析
@@ -329,7 +332,7 @@ dotnet run --project src\Mz1500.Cli -c Release --no-build -- `
   - `--dump-at FRAME@ADDR,LEN` : 指定フレーム到達時点のメモリダンプ
   - `--watch-write` の重複排除を「同一アドレスへの (PC,value) 変化」ベースに変更し、
     ログに HL/BC/DE/SP を併記
-  - `out\sideb.bin` と実行後 RAM ダンプをバイト比較する `tmp\code_compare.py`
+  - `out\sideb.bin` と実行後 RAM ダンプをバイト比較する `tools\code_compare.py`
 - read_keys が書いた raw 値 (FFh) と W_KEYS の値 (0Fh) の矛盾から「RAM コード破壊」を特定。
 - frame 989 (init_stage 実行フレーム) 時点のコード領域ダンプと bin の diff で
   破壊バイト 2151h-2155h (`CB 3F CB 3F 81` → `13 14 01 07 05` = "STAGE") を特定。
