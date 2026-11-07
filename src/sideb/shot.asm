@@ -33,7 +33,7 @@ SU_N:   ld de,O_LEN
 ; ------------------------------------------------------------
 ; 自弾 × 地形 (破壊ブロック) 判定
 ; 入力: IX = 自弾スロット
-; 出力: ヒット時 CY=1 (該当セルを消去 + スコア +30)
+; 出力: ヒット時 CY=1 (16x16タイル全体を消去 + スコア +30)
 ;       非ヒット時 CY=0
 ; 破壊: A, F (BC, DE, HL, IX は保存)
 ; 注意: セルアドレスは VRAM (D400h) 基準, ミラーは VRAM-2000h (B400h 基準)。
@@ -64,14 +64,56 @@ shot_hit_bg:
         ld a,(hl)
         call is_breakable
         jr nc,SHB_NO
-        ld (hl),0                       ; ミラーを空に
+        pop bc                          ; B=列, C=行 (16x16 タイルの象限計算)
+        ; ミラーアドレスをタイル左上へ丸める
+        ld a,(W_TILE_PHASE)
+        xor c
+        and 1
+        jr z,SHB_ROW_ALIGNED
+        ld de,40
+        or a
+        sbc hl,de
+SHB_ROW_ALIGNED:
+        ld a,b
+        and 1
+        jr z,SHB_TILE_TOP
+        dec hl
+SHB_TILE_TOP:
+        ; ミラーの2x2コードを空にする
+        ld (hl),0
+        inc hl
+        ld (hl),0
+        ld de,39
+        add hl,de
+        ld (hl),0
+        inc hl
+        ld (hl),0
+        ld de,41
+        or a
+        sbc hl,de                       ; ミラー左上へ戻る
         ld bc,2000h
         add hl,bc                       ; VRAM セルへ戻る
         ld (hl),0
-        ld bc,0800h
-        add hl,bc                       ; PCG 属性 (DC00h 基準)
+        inc hl
+        ld (hl),0
+        ld de,39
+        add hl,de
+        ld (hl),0
+        inc hl
+        ld (hl),0
+        ld de,41
+        or a
+        sbc hl,de                       ; VRAM 左上へ戻る
+        ld de,0800h
+        add hl,de                       ; PCG 属性 (DC00h 基準)
         ld (hl),PCGATTR_BANK0
-        pop bc
+        inc hl
+        ld (hl),PCGATTR_BANK0
+        ld de,39
+        add hl,de
+        ld (hl),PCGATTR_BANK0
+        inc hl
+        ld (hl),PCGATTR_BANK0
         ld de,030h
         call add_score
         pop hl

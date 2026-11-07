@@ -32,20 +32,12 @@ NU_N:   ld de,O_LEN
 ; ------------------------------------------------------------
 ; ウィスプ (種別 2/4) 移動: 直進降下, t = 48 で照準弾 1 発
 ; 入力: IX = 敵スロット
-; 出力: stage1-2 は y +1, 以降 y +2 (y >= 168 で消滅), t=48 で照準弾
+; 出力: y +1px/frame (y >= 168 で消滅), t=48 で照準弾
 ; 破壊: A, B, F
 ; ------------------------------------------------------------
 enemy_move_wisp:
-        ld a,(W_STAGE)
-        cp 3
-        jr nc,EMW_FAST
         ld a,(ix+3)
-        inc a                           ; stage 1-2 は 1px/frame
-        jr EMW_POS
-EMW_FAST:
-        ld a,(ix+3)
-        add a,2
-EMW_POS:
+        inc a                           ; 敵はスクロールと独立して一定速度
         cp 168                          ; 2x2 の下段が行 21 を超える前に消滅
         jr nc,EMW_KILL
         ld (ix+3),a
@@ -61,20 +53,12 @@ EMW_KILL:
 ; ------------------------------------------------------------
 ; ガーゴイル (種別 1/3) 移動: 降下 + 16t ごとに水平方向反転
 ; 入力: IX = 敵スロット
-; 出力: stage1-2 は y +1, 以降 y +2 (y >= 168 で消滅), x 往復
+; 出力: y +1px/frame (y >= 168 で消滅), x 往復
 ; 破壊: A, F
 ; ------------------------------------------------------------
 enemy_move_gargoyle:
-        ld a,(W_STAGE)
-        cp 3
-        jr nc,EMG_FAST
         ld a,(ix+3)
-        inc a                           ; stage 1-2 は 1px/frame
-        jr EMG_POS
-EMG_FAST:
-        ld a,(ix+3)
-        add a,2
-EMG_POS:
+        inc a                           ; 敵はスクロールと独立して一定速度
         cp 168
         jr nc,EMG_KILL
         ld (ix+3),a

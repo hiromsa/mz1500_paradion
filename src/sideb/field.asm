@@ -85,4 +85,7 @@ do_scroll_shift:
         ld de,VRAM_PCG
         ld bc,40
         ldir
+        ld a,(W_TILE_PHASE)
+        xor 1
+        ld (W_TILE_PHASE),a               ; 8px シフトごとに16pxタイルの行位相反転
         ret

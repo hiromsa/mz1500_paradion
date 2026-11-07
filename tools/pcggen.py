@@ -120,6 +120,76 @@ b0.put(0x19, [  # S5 stained window (deco)
 b0.put(0x1A, [  # S5 armor statue (breakable)
     "...WW...", "..WWWW..", ".WKKKKW.", ".WKWWKW.",
     "..WWWW..", ".W.WW.W.", ".W.WW.W.", "..W..W.."])
+
+# ---------------------------------------------------------------- bank 0: 16x16 terrain tiles
+def scale2(art):
+    """Scale a hand-drawn 8x8 pattern to a clear 16x16 terrain tile."""
+    assert len(art) == 8 and all(len(row) == 8 for row in art)
+    return ["".join(pixel * 2 for pixel in row) for row in art for _ in range(2)]
+
+def terrain16(code, art8):
+    b0.put16(code, scale2(art8))
+
+WATER_FOREST = [
+    "BBBBBBBB", "BBCBBBBB", "BBBBBBBB", "BBBBBBBB",
+    "BBBBBBBC", "BBBBBBBB", "BBBBBBBB", "BBCBBBBB"]
+BRIDGE_WOOD = [
+    "YYYYYYYY", "KKKKKKKK", "YYYYYYYY", "KKKKKKKK",
+    "YYYYYYYY", "KKKKKKKK", "YYYYYYYY", "KKKKKKKK"]
+CANYON = [
+    "KKKKKKKK", "KBBKKBBK", "KKBBBBKK", "BBKKKKBB",
+    "BBKKKKBB", "KKBBBBKK", "KBBKKBBK", "KKKKKKKK"]
+BRIDGE_STONE = [
+    "WWWWWWWW", "KKKKKKKK", "WWWWWWWW", "KKKKKKKK",
+    "WWWWWWWW", "KKKKKKKK", "WWWWWWWW", "KKKKKKKK"]
+SWAMP = [
+    "GGGGGGGG", "GCCGGGGG", "GGGGGGGG", "GGGGGGGG",
+    "GGGGCCGG", "GGGGGGGG", "GGGGGGGG", "GCCGGGGG"]
+BRIDGE_OLD = [
+    "YYYYYYYY", "YKKYKKYK", "YYYYYYYY", "YKKYKKYK",
+    "YYYYYYYY", "YKKYKKYK", "YYYYYYYY", "YKKYKKYK"]
+BRIDGE_BASALT = [
+    "KKKKKKKK", "KWWKKWWK", "KKKKKKKK", "KWWKKWWK",
+    "KKKKKKKK", "KWWKKWWK", "KKKKKKKK", "KWWKKWWK"]
+CRYSTAL = [
+    "KKKKKKKK", "KKKYYKKK", "KKYWWYKK", "KKYWWYKK",
+    "KKKYCKKK", "KKKKCKKK", "KKKKKKKK", "KKKKKKKK"]
+MOAT = [
+    "BBBBBBBB", "BBCBBBBB", "BBBBBBBB", "BBBBBBBB",
+    "BBBBBCBB", "BBBBBBBB", "BBBBBBBB", "BBCBBBBB"]
+DRAWBRIDGE = [
+    "YYYYYYYY", "KKYKKYKK", "YYYYYYYY", "KKYKKYKK",
+    "YYYYYYYY", "KKYKKYKK", "YYYYYYYY", "KKYKKYKK"]
+
+TERRAIN_TILES = {
+    1: {"ground": 0x80, "tree": 0x84, "river": 0x88, "bridge": 0x8C,
+        "flowers": 0x90, "breakable": 0x94},
+    2: {"ground": 0x98, "boulder": 0x9C, "ravine": 0xA0, "bridge": 0xA4,
+        "bones": 0xA8, "breakable": 0xAC},
+    3: {"ground": 0xB0, "tomb": 0xB4, "swamp": 0xB8, "bridge": 0xBC,
+        "dead_tree": 0xC0, "breakable": 0xC4},
+    4: {"ground": 0xC8, "rock": 0xCC, "lava": 0xD0, "bridge": 0xD4,
+        "crystal": 0xD8, "breakable": 0xDC},
+    5: {"ground": 0xE0, "pillar": 0xE4, "moat": 0xE8, "bridge": 0xEC,
+        "window": 0xF0, "breakable": 0xF4},
+}
+
+TERRAIN_ART = {
+    1: {"ground": b0.chars[0x01], "tree": b0.chars[0x02], "river": WATER_FOREST,
+        "bridge": BRIDGE_WOOD, "flowers": b0.chars[0x04], "breakable": b0.chars[0x03]},
+    2: {"ground": b0.chars[0x08], "boulder": b0.chars[0x09], "ravine": CANYON,
+        "bridge": BRIDGE_STONE, "bones": b0.chars[0x0B], "breakable": b0.chars[0x0C]},
+    3: {"ground": b0.chars[0x0D], "tomb": b0.chars[0x0E], "swamp": SWAMP,
+        "bridge": BRIDGE_OLD, "dead_tree": b0.chars[0x0F], "breakable": b0.chars[0x11]},
+    4: {"ground": b0.chars[0x12], "rock": b0.chars[0x14], "lava": b0.chars[0x13],
+        "bridge": BRIDGE_BASALT, "crystal": CRYSTAL, "breakable": b0.chars[0x15]},
+    5: {"ground": b0.chars[0x16], "pillar": b0.chars[0x18], "moat": MOAT,
+        "bridge": DRAWBRIDGE, "window": b0.chars[0x19], "breakable": b0.chars[0x1A]},
+}
+for stage, tiles in TERRAIN_TILES.items():
+    for tile_name, code in tiles.items():
+        terrain16(code, TERRAIN_ART[stage][tile_name])
+
 DIGITS = [
     [".WWWW...", "WW..WW..", "WW..WW..", "WW..WW..", "WW..WW..", "WW..WW..", ".WWWW...", "........"],
     ["...WW...", "..WWW...", "...WW...", "...WW...", "...WW...", "...WW...", ".WWWWW..", "........"],
@@ -440,21 +510,114 @@ def emit_asm(path, label):
         f.write('\n'.join(lines + table + ['', '; --- segment data ---', ''] + body))
     print(f'{path}: {offset} bytes ({offset / 1024:.1f} KB) / {segs} segments')
 
+TERRAIN_LABELS = {
+    1: {"T_S1_GRASS": "ground", "T_S1_TREE": "tree", "T_S1_RIVER": "river",
+        "T_S1_BRIDGE": "bridge", "T_S1_FLOW": "flowers", "T_S1_BUSH": "breakable"},
+    2: {"T_S2_GROUND": "ground", "T_S2_BOULDER": "boulder", "T_S2_RAVINE": "ravine",
+        "T_S2_BRIDGE": "bridge", "T_S2_BONES": "bones", "T_S2_RUBBLE": "breakable"},
+    3: {"T_S3_GROUND": "ground", "T_S3_TOMB": "tomb", "T_S3_SWAMP": "swamp",
+        "T_S3_BRIDGE": "bridge", "T_S3_DEADTREE": "dead_tree", "T_S3_URN": "breakable"},
+    4: {"T_S4_GROUND": "ground", "T_S4_ROCK": "rock", "T_S4_LAVA": "lava",
+        "T_S4_BRIDGE": "bridge", "T_S4_CRYSTAL": "crystal", "T_S4_OBSID": "breakable"},
+    5: {"T_S5_FLOOR": "ground", "T_S5_PILLAR": "pillar", "T_S5_MOAT": "moat",
+        "T_S5_BRIDGE": "bridge", "T_S5_WINDOW": "window", "T_S5_ARMOR": "breakable"},
+}
+
+MAP_GLYPHS = {
+    1: {'.': "ground", 'T': "tree", 'r': "river", '=': "bridge", 'f': "flowers", 'b': "breakable"},
+    2: {'.': "ground", 'T': "boulder", 'r': "ravine", '=': "bridge", 'f': "bones", 'b': "breakable"},
+    3: {'.': "ground", 'T': "tomb", 'r': "swamp", '=': "bridge", 'f': "dead_tree", 'b': "breakable"},
+    4: {'.': "ground", 'T': "rock", 'r': "lava", '=': "bridge", 'f': "crystal", 'b': "breakable"},
+    5: {'.': "ground", 'T': "pillar", 'r': "moat", '=': "bridge", 'f': "window", 'b': "breakable"},
+}
+MAP_DEF = {
+    stage: {glyph: TERRAIN_TILES[stage][tile] for glyph, tile in glyphs.items()}
+    for stage, glyphs in MAP_GLYPHS.items()
+}
+
+# Fixed 20x11 layouts, one glyph per 16x16 tile. Each map has landmarks,
+# obstacle groups and a deliberate river/chasm/lava/moat crossing with a bridge.
+MAP_ROWS = {
+    1: [
+        "....................",
+        "..TT...........TT...",
+        "..TT...f.......TT...",
+        "..........rr........",
+        "...T......rr....T...",
+        "...T......==....T...",
+        "...T......rr....T...",
+        "..........rr........",
+        "...f...b..rr...b....",
+        "....................",
+        "..TT...........TT...",
+    ],
+    2: [
+        "....................",
+        "..TT............TT..",
+        "..TT..b......f..TT..",
+        "....T............T..",
+        "..rrrrrrrrrrrrrrrr..",
+        "..rrrrrr==rrrrrrrr..",
+        "..rrrrrr==rrrrrrrr..",
+        "..rrrrrrrrrrrrrrrr..",
+        "....T....==....T....",
+        "..f..TT...b...f.....",
+        "..TT............TT..",
+    ],
+    3: [
+        "....................",
+        "..TT..f......f..TT..",
+        "....T............T..",
+        "..rrr...rrr...rrr...",
+        "..rrr===rrr...rrr...",
+        "..rrr===rrr...rrr...",
+        "..rrr...rrr...rrr...",
+        "...T......b.....T...",
+        "...f..T.....T..f....",
+        "...T...........T....",
+        "....................",
+    ],
+    4: [
+        "....................",
+        "..TT..f......f..TT..",
+        "....T............T..",
+        "....................",
+        "..rrrrrrrrrrrrrrrr..",
+        "..rrrrrr==rrrrrrrr..",
+        "..rrrrrr==rrrrrrrr..",
+        "..rrrrrrrrrrrrrrrr..",
+        "...T....b....T......",
+        "...f......f.....b...",
+        "....TT..........TT..",
+    ],
+    5: [
+        "....................",
+        ".T...T...T...T...T..",
+        "..f..............f..",
+        "..rrr...rrr...rrr...",
+        "..rrr===rrr...rrr...",
+        "..rrr===rrr...rrr...",
+        "..rrr...rrr...rrr...",
+        "..T..............T..",
+        "...f....f....f......",
+        "..T..............T..",
+        "....................",
+    ],
+}
+
+def asm_hex(value):
+    digits = f'{value:02X}'
+    return ('0' if digits[0] in 'ABCDEF' else '') + digits + 'h'
+
 def emit_map_inc(path):
-    lines = ['; generated by tools/pcggen.py - PCG code equates', '']
+    lines = ['; generated by tools/pcggen.py - 16x16 tile and PCG code equates', '']
+    lines.append('; --- bank 0: each terrain tile is 2x2 characters, top-left code below ---')
+    lines.append('defc T_BLANK = 00h')
+    for stage, entries in TERRAIN_LABELS.items():
+        for name, tile in entries.items():
+            lines.append(f'defc {name} = {asm_hex(TERRAIN_TILES[stage][tile])}')
+    lines.extend(['defc T_DIGIT0 = 50h', 'defc T_HEART = 5Ah', ''])
     names = {
-        0: [('T_BLANK', 0x00),
-            ('T_S1_GRASS', 0x01), ('T_S1_TREE', 0x02), ('T_S1_BUSH', 0x03),
-            ('T_S1_FLOW', 0x04), ('T_S1_ROCK', 0x05),
-            ('T_S2_GROUND', 0x08), ('T_S2_BOULDER', 0x09), ('T_S2_CRAG', 0x0A),
-            ('T_S2_BONES', 0x0B), ('T_S2_RUBBLE', 0x0C),
-            ('T_S3_GROUND', 0x0D), ('T_S3_TOMB', 0x0E), ('T_S3_DEADTREE', 0x0F),
-            ('T_S3_FENCE', 0x10), ('T_S3_URN', 0x11),
-            ('T_S4_GROUND', 0x12), ('T_S4_LAVA', 0x13), ('T_S4_ROCK', 0x14),
-            ('T_S4_OBSID', 0x15),
-            ('T_S5_FLOOR', 0x16), ('T_S5_WALL', 0x17), ('T_S5_PILLAR', 0x18),
-            ('T_S5_WINDOW', 0x19), ('T_S5_ARMOR', 0x1A),
-            ('T_DIGIT0', 0x50), ('T_HEART', 0x5A)],
         1: [('SP_SHIP0', 0x00), ('SP_SHIP1', 0x04), ('SP_SHIP2', 0x08), ('SP_SHIP3', 0x0C),
             ('SP_SHOT', 0x10), ('SP_ESHOT', 0x11),
             ('SP_EXPL0', 0x12), ('SP_EXPL1', 0x16), ('SP_EXPL2', 0x1A), ('SP_EXPL3', 0x1E),
@@ -467,82 +630,28 @@ def emit_map_inc(path):
     for bank, entries in names.items():
         lines.append(f'; --- bank {bank} ---')
         for name, code in entries:
-            lines.append('defc ' + name + ' = %02Xh' % code)
+            lines.append(f'defc {name} = {asm_hex(code)}')
         lines.append('')
     with open(path, 'w', newline='\n') as f:
         f.write('\n'.join(lines))
 
-# ---------------------------------------------------- stage maps
-# '.'=ground 'T'=solid 'b'=breakable 'f'=deco 'r'=solid (per-stage alphabet)
-MAP_DEF = {
-    1: {'.': 0x01, 'T': 0x02, 'b': 0x03, 'f': 0x04, 'r': 0x05},
-    2: {'.': 0x08, 'T': 0x09, 'b': 0x0C, 'f': 0x0B, 'r': 0x0A},
-    3: {'.': 0x0D, 'T': 0x0E, 'b': 0x11, 'f': 0x10, 'r': 0x0F},
-    4: {'.': 0x12, 'T': 0x14, 'b': 0x15, 'f': 0x13, 'r': 0x14},
-    5: {'.': 0x16, 'T': 0x17, 'b': 0x1A, 'f': 0x19, 'r': 0x18},
-}
-MAP_ROWS = {
-    1: [
-        "........................................",
-        "..T.....b.....T......T.....b............",
-        "........................................",
-        "..........f.......b..........f....T.....",
-        "....T..................T................",
-        ".....................b........b.........",
-        "..b.........T.......................b...",
-        ".........f..............f...............",
-    ],
-    2: [
-        "........................................",
-        ".....r.........r..........r.............",
-        "......................b.................",
-        "..b..........r.......r..........r.......",
-        ".....................b........b.........",
-        "........r..................b............",
-        "......b.........r...........r...........",
-        "........................................",
-    ],
-    3: [
-        "........................................",
-        "..T......T.......T..........T.......T...",
-        "........................................",
-        "....b........b.........b.......b........",
-        "..........f...............f.............",
-        "..f.....T.........T...........T....b....",
-        "........................................",
-        "....b..........b..........b..........b..",
-    ],
-    4: [
-        "........................................",
-        "....T.......T........T........T.........",
-        "...................f........f...........",
-        "..b.....f.......b.........b.............",
-        "..........T..........T..........T.......",
-        "......b.........b..........b............",
-        "........................................",
-        "..T........T..........T.........T.......",
-    ],
-    5: [
-        "........................................",
-        "..T.....T......T.....T......T......T....",
-        "........................................",
-        "....b.......b........b.........b........",
-        "........f..........f...........f........",
-        "..f....T......T........T.....T.....b....",
-        "........................................",
-        "....b.........b..........b........b.....",
-    ],
-}
-
 def emit_maps(path):
-    lines = ['; generated by tools/pcggen.py - stage map row tables (40 bytes per row)', '']
-    for st in sorted(MAP_ROWS):
-        alpha = MAP_DEF[st]
-        lines.append(f'MAP_ROWS_S{st}:')
-        for row in MAP_ROWS[st]:
-            assert len(row) == 40, f'stage {st} row len {len(row)}'
-            codes = [alpha[ch] for ch in row]
-            lines.append('        db ' + ','.join(f'{c:02X}h' for c in codes))
+    lines = ['; generated by tools/pcggen.py - 16x16 tile maps expanded to 40x22 characters', '']
+    for stage in sorted(MAP_ROWS):
+        alpha = MAP_DEF[stage]
+        lines.append(f'MAP_ROWS_S{stage}:')
+        rows = MAP_ROWS[stage]
+        assert len(rows) == 11, f'stage {stage}: need 11 tile rows, got {len(rows)}'
+        for tile_row in rows:
+            assert len(tile_row) == 20, f'stage {stage}: tile row len {len(tile_row)}: {tile_row!r}'
+            upper, lower = [], []
+            for glyph in tile_row:
+                code = alpha[glyph]
+                upper.extend((code, code + 1))
+                lower.extend((code + 2, code + 3))
+            assert len(upper) == len(lower) == 40
+            lines.append('        db ' + ','.join(asm_hex(c) for c in upper))
+            lines.append('        db ' + ','.join(asm_hex(c) for c in lower))
         lines.append('')
     with open(path, 'w', newline='\n') as f:
         f.write('\n'.join(lines))

@@ -7,61 +7,61 @@
 ; +5 ボス攻撃間隔 +6/7 マップ行テーブル +8 行数 +9/A BGM +B/C SE射撃 +D/E SE爆発 +F 地形
 STAGE_TABLE:
 ; --- Stage 1: 魔界の森 ---
-        db 6
+        db 12
         db 90
         dw 2700
         db 24
         db 90
         dw MAP_ROWS_S1
-        db 8
+        db 22                          ; 11 tile rows x 2 character rows
         dw BGM_FIELD1
         dw SE_SHOT
         dw SE_EXPL
         db T_S1_GRASS
 ; --- Stage 2: 荒涼たる岩場 ---
-        db 6
+        db 12
         db 75
         dw 3000
         db 32
         db 80
         dw MAP_ROWS_S2
-        db 8
+        db 22
         dw BGM_ROCK
         dw SE_SHOT
         dw SE_EXPL
         db T_S2_GROUND
 ; --- Stage 3: 呪われた墓地 ---
-        db 5
+        db 10
         db 65
         dw 3300
         db 40
         db 70
         dw MAP_ROWS_S3
-        db 8
+        db 22
         dw BGM_FIELD2
         dw SE_SHOT
         dw SE_EXPL
         db T_S3_GROUND
 ; --- Stage 4: 灼熱の火山 ---
-        db 5
+        db 10
         db 55
         dw 3600
         db 48
         db 60
         dw MAP_ROWS_S4
-        db 8
+        db 22
         dw BGM_FIELD2
         dw SE_SHOT
         dw SE_EXPL
         db T_S4_GROUND
 ; --- Stage 5: 幻魔城・最上階 ---
-        db 4
+        db 10
         db 48
         dw 3900
         db 56
         db 50
         dw MAP_ROWS_S5
-        db 8
+        db 22
         dw BGM_FIELD2
         dw SE_SHOT
         dw SE_EXPL
@@ -71,8 +71,11 @@ defc STAGE_LEN = 16
 
 ; ---- 各種テーブル ----
 PWUP_TBL:       db SP_PW_TWIN, SP_PW_SPEED, SP_PW_SHIELD, SP_PW_LIFE
-BRK_TABLE:      db 003h,00Ch,011h,015h,01Ah
-defc BRK_CNT = 5
+; 16x16 destructible terrain tile codes (all four 8x8 quadrants per tile)
+BRK_TABLE:      db 094h,095h,096h,097h, 0ACh,0ADh,0AEh,0AFh
+                db 0C4h,0C5h,0C6h,0C7h, 0DCh,0DDh,0DEh,0DFh
+                db 0F4h,0F5h,0F6h,0F7h
+defc BRK_CNT = 20
 SINE16:         db 0,6,11,16,19,21,22,22,22,21,19,16,11,6,0,0
 STAGE_MSGS:     dw MSG_STG1, MSG_STG2, MSG_STG3, MSG_STG4, MSG_STG5
 

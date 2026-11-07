@@ -86,6 +86,7 @@ init_stage:
         ldir
         xor a
         ld (W_SCROLLEDUE),a              ; 古いスクロール要求も破棄
+        ld (W_TILE_PHASE),a               ; 新しいマップは16x16タイル境界から開始
         ; プレイフィールド構築
         ld hl,MIRROR_TOP
         ld b,FIELD_ROWS

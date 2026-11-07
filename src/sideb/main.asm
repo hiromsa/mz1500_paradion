@@ -64,6 +64,7 @@ defc W_SCROLLEDUE = WORK_BOTTOM + 026h   ; 1=render 先頭でスクロール実�
 defc W_STATDIRTY = WORK_BOTTOM + 027h   ; 1=スコア欄再描画
 defc W_SESHOT = WORK_BOTTOM + 028h   ; 2B SE(射撃) ストリーム
 defc W_SEEXPL = WORK_BOTTOM + 02Ah   ; 2B SE(爆発) ストリーム
+defc W_TILE_PHASE = WORK_BOTTOM + 02Ch ; 16x16 地形タイルの行位相 (8pxスクロールで反転)
 defc W_BOSS = WORK_BOTTOM + 030h   ; ボス O_S 構造 (8B)
 defc W_UPMARK = WORK_BOTTOM + 038h   ; 1UP 済みの万位バイト
 defc W_RAND = WORK_BOTTOM + 03Ah     ; 乱数保持
