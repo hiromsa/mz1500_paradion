@@ -143,8 +143,9 @@ dotnet run --project src\Mz1500.Cli -c Release --no-build -- `
 | B00B | 残機 |
 | B00E-F | ボス出現タイマ |
 | B040-47 | **自機スロット** (+0 状態, +1 attr, +2 x2, +3 y, +4 code, +5 t, +6/7 描画セル) |
-| B040-DF | オブジェクトテーブル 20 slot × 8B (弾=1-4, 敵弾=5-8, 敵=9-14, アイテム=15-16, 爆発=17-19) |
-| B0E0-E8 | サウンド変数 (V_BGM_PTR/DUR/ACT/LOOP, V_SE_PTR/ACT) |
+| B040-E7 | オブジェクトテーブル 21 slot × 8B (自機=0, 弾=1-4, 敵弾=5-8, 敵=9-14, アイテム=15-16, 爆発=17-19, 宝箱=20) |
+| B0E8-F1 | サウンド変数 (V_BGM_PTR/DUR/ACT/LOOP, V_SE_PTR/DUR/ACT) |
+| B0F2-FF | 拡張ワーク (W_SPAWNMAX..W_RFDP, main.asm の defc 参照) |
 
 ### 5.4 画面確認
 - テキスト画面: `--no-text` を付けずに実行 (MZ 表示コードを ASCII 変換して 40x25 表示)

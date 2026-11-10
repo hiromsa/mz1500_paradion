@@ -359,3 +359,49 @@ dotnet run --project src\Mz1500.Cli -c Release --no-build -- `
 
 以上。このバグは「動くものを作る」段階は越えており、あとはメモリ破壊源を 1 つ特定するだけの段階まで来ている。
 エミュレータのウォッチ機能とブレッドクラムの併用で、数回の実行で犯人が特定できる見込み。
+
+---
+
+## 13. 「1面 BGM がループ点で崩れる / おかしな音」問題 (2026-11-10 解決)
+
+### 症状
+- 1面 BGM がループすべきところでループせず, デタラメな音が鳴り始める。
+  射撃 / 爆発 SE が鳴った後や旋律の一周目終端で顕著。
+
+### 原因 (確定)
+- `snd_tick_se` が SE エントリ先頭バイトを「バイト数」として消費していた。
+  SE ストリームの実際の形式は BGM と同じ `[dur][バイト数][PSG writes...]`
+  (tools/musicgen.py が生成) で, 先頭は dur (待ちフレーム)。
+  そのため ①バイト数として dur (最大 255) を読む, ②cnt バイトをスキップしない
+  の 2 重のズレで 1 エントリごとにポインタが暴走し,
+  SE データ領域 (実 501Fh-5082h) を飛び出して pcg_restore データ (18KB) を
+  「バイト数」解釈しながらデタラメな PSG 出力を続けていた。
+- 修正前 E2E の watch 証跡 (`--watch-write B0EE`):
+  `B0EE=3C (PC 267Ah=play_se, DE=503Ch=SE_EXPL)` →
+  `3F → 31 → CA → CF (PC 2624h=snd_tick_se, HL=503F→5131→51CA→52CF)` →
+  `B0F0=00 (SE_FIN@52CF)`。SE は BGM の直後に out されるため BGM が
+  ノイズでかき消され, 「ループできずにおかしな音が鳴る」ように聞こえていた。
+- BGM 側 (`snd_tick_bgm`) は dur/cnt を正しく読み分けておりループ機構は正常。
+  修正前 E2E で `B0E8=4F (PC 2658h=BGM_REW, HL=394Fh)` のリワインドと
+  2 巡目の進行 (dump: PTR=3A3A) を確認済み。
+- 付随バグ: `ending_init` が `ld de,BGM_END` で play_bgm していたが,
+  BGM_END は `dw BGM_CLEAR` のポインタ値 (ストリームではない) のため
+  エンディング曲もデタラメに再生されていた。
+
+### 修正
+- `sound.asm`: `snd_tick_se` を BGM と同一の進行に改修
+  (dur 待ち → `[dur][cnt]` を 2 バイト読んで cnt バイト out)。
+  `V_SE_DUR = W_WORKTOP+008h` を追加, `V_SE_ACT` を +009h へ移動。
+  `play_se` / `snd_init` でも V_SE_DUR を 0 初期化。
+- `main.asm`: 拡張ワーク (W_SPAWNMAX..W_RFDP) を +1 オフセットシフト
+  (W_SPAWNMAX=B0F2, W_RFDP=B0FE)。
+- `stage.asm`: エンディングは `ld de,BGM_CLEAR` を直接指定。
+  `musicgen.py` の `BGM_END: dw BGM_CLEAR` 出力を削除し `sound_data.asm` を再生成
+  (曲ラベルは全て +22B: BGM_FIELD1=$2765, SE_SHOT=$3E33 等)。
+
+### 検証
+- 静的シミュレーション (`tmp/bgm_sim3.py`, 修正後 bin): 全 5 曲が FFh 終端で
+  2 回リワインド, 全 3 SE が 00h 終端で停止 (領域オーバーなし)。
+- E2E (`--watch-write B0EE/B0E8 --key 20@1200`): SE ポインタは
+  5033h→5038h→…→504Fh と SE_SHOT の 6 エントリ (+5×5, +3) をちょうど消費して
+  停止, 暴走ゼロ。BGM は PC 266Ah (BGM_REW) でリワインドし 2 巡目が正常進行。
