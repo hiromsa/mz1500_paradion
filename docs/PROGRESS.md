@@ -1,5 +1,26 @@
 # 進捗ログ
 
+## 2026-11-10 サウンド分離: BGM = PSG1 (左) / SE = PSG2 (右) で常時同時鳴音
+
+- それまで BGM/SE とも E9h (両 PSG 同時) に書き, SE が同一チップのレジスタを
+  上書きするため「BGM が止まって SE が鳴る」ように聞こえていた。
+  mz1500.inc の個別ポート PORT_PSG_L (F2h) / PORT_PSG_R (F3h) を使い,
+  BGM = PSG1 (左) / SE = PSG2 (右) に分離して SE 中も BGM が鳴り続けるようにした
+  (sound.asm: BGW1 → PORT_PSG_BGM, SEW1 → PORT_PSG_SE)。
+- 分離に伴い右 PSG のライフサイクル管理を追加: play_se 開始時に消音 (前回 SE の
+  残レジスタ掃除), SE_FIN で終端消音。psg_mute は「psg_mute_one (C=ポート,
+  out (c),a, B=0) × 2」に分解。未使用の stop_bgm を削除 (YAGNI)。
+  ストリームのデータ形式・曲データは無変更 (出力先ポートはドライバ側の関心事)。
+- **検証 (E2E --wav)**: 変更前は corr(L,R)=+1.000 の完全モノラル複製だったが,
+  変更後は corr=+0.255, rmsL=0.0846 (BGM 音量不変) / rmsR=0.0216 (SE のみ)。
+  BGM 再生中 (frame 2000) の射撃 SE で右チャンネル t=33.5-33.9s にバースト,
+  左は連続して BGM が鳴り続ける。V_BGM_ACT (B0EB) watch は snd_init=00 (frame 1094)
+  → play_bgm=01 (frame 1152) の 2 件のみ, frame 2400 まで BGM 進行継続
+  (PTR 3AA3@1300 → 3BA6@2100)。ビルド通過 (sideb.bin 34456B)。
+- 副産物: CR@900 を押さない起動フローで, ST_FIELD 突入直後の SPACE 押下が
+  ソフトリセット相当のクラッシュを起こす**既存バグ**を発見 (分離前バイナリと
+  T states 完全一致で再現 → 本変更とは無関係)。DEBUG_STATE §14 参照。
+
 ## 2026-11-10 サウンド修正: SE ストリーム暴走 (BGM ループ崩れの正体) / エンディング BGM
 
 - **1面 BGM がループ点でおかしな音になる** → SE ドライバのバグが原因。

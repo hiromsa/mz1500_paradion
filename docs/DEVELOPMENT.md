@@ -204,7 +204,9 @@ dotnet run --project src\Mz1500.Cli -c Release --no-build -- `
   (1038h をフックに使う方式はリブートで壊れる)。
 
 ### サウンド / PIT
-- PSG: `OUT E9h` = 両チャンネル同時 (`F2h`=左, `F3h`=右)。SN76489AN 形式。
+- PSG: `OUT E9h` = 両チャンネル同時 (`F2h`=左 PSG1, `F3h`=右 PSG2)。SN76489AN 形式。
+  本作は `F2h` = BGM 専用 / `F3h` = SE 専用に分離使用 (sound.asm。SE 開始・終端時に
+  右 PSG を消音して残音を防止)。
 - YM2151 (OPM): アドレス 0708h / データ 0709h。
 - 8253 PIT: E004-E007。
 
