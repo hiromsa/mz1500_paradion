@@ -7,7 +7,8 @@ defc V_BGM_DUR = W_WORKTOP + 002h
 defc V_BGM_ACT = W_WORKTOP + 003h
 defc V_BGM_LOOP = W_WORKTOP + 004h     ; 2B
 defc V_SE_PTR = W_WORKTOP + 006h     ; 2B
-defc V_SE_ACT = W_WORKTOP + 008h
+defc V_SE_DUR = W_WORKTOP + 008h     ; 1B 現 SE エントリの残り待ちフレーム
+defc V_SE_ACT = W_WORKTOP + 009h
 
 
 ; ---- 初期化 ----
@@ -29,6 +30,7 @@ snd_init:
         xor a
         ld (V_BGM_ACT),a
         ld (V_SE_ACT),a
+        ld (V_SE_DUR),a
         ld (V_BGM_DUR),a
         ret
 
@@ -66,8 +68,9 @@ sound_update:
 ; ------------------------------------------------------------
 ; サウンドシーケンサ 1 tick 進行
 ; 入力: なし
-; 出力: SE 有効時は SE ストリーム 1 エントリ再生 (終端で停止),
-;       それ以外は BGM 進行 (dur -1, 0 で次エントリ, FFh でループ点へ)
+; 出力: SE 有効時は SE ストリームを進行 (dur 待ち + エントリ再生,
+;       00h 終端で停止), それに加えて BGM 進行 (dur -1, 0 で次エントリ,
+;       FFh でループ点へ)
 ; 破壊: A, B, HL, F
 ; ------------------------------------------------------------
 snd_tick:
@@ -76,16 +79,25 @@ snd_tick_se:
         ld a,(V_SE_ACT)
         or a
         ret z
-        ld hl,(V_SE_PTR)
-        ld a,(hl)                       ; バイト数
+        ld a,(V_SE_DUR)
         or a
-        jr z,SE_FIN
+        jr z,SE_LOAD                   ; dur 切れ → 次エントリ
+        dec a
+        ld (V_SE_DUR),a
+        ret
+SE_LOAD:
+        ld hl,(V_SE_PTR)
+        ld a,(hl)
+        or a
+        jr z,SE_FIN                    ; 00h = ストリーム終端
+        ld (V_SE_DUR),a                ; エントリ先頭 = dur (待ちフレーム)
         inc hl
-        ld b,a
-STW1:   ld a,(hl)
+        ld b,(hl)                      ; 次バイト = PSG 書き込みバイト数
+        inc hl
+SEW1:   ld a,(hl)
         inc hl
         out (PORT_PSG_LR),a
-        djnz STW1
+        djnz SEW1
         ld (V_SE_PTR),hl
         ret
 SE_FIN:
@@ -151,13 +163,15 @@ stop_bgm:
         jp psg_mute
 
 ; ------------------------------------------------------------
-; SE 開始 (次の割り込みから再生)
-; 入力: DE = SE ストリーム先頭アドレス
-; 出力: V_SE_PTR = DE, V_SE_ACT = 1
+; SE 開始 (次の sound_update から再生)
+; 入力: DE = SE ストリーム先頭アドレス ([dur][バイト数][PSG writes...], 00h 終端)
+; 出力: V_SE_PTR = DE, V_SE_DUR = 0, V_SE_ACT = 1
 ; 破壊: A, F
 ; ------------------------------------------------------------
 play_se:
         ld (V_SE_PTR),de
+        xor a
+        ld (V_SE_DUR),a                ; 1 エントリ目を即ロード
         ld a,1
         ld (V_SE_ACT),a
         ret
