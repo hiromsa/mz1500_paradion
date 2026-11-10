@@ -245,5 +245,5 @@ ending_init:
         ld hl,MSG_END4
         ld c,16
         call show_msg
-        ld de,BGM_END
-        jp play_bgm
+        ld de,BGM_CLEAR                 ; エンディングはクリアファンファーレ
+        jp play_bgm                     ; (BGM_END は dw ポインタでありストリームではない)

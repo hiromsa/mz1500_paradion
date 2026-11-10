@@ -318,7 +318,6 @@ def main():
     ]
     for label, score in SCORES.items():
         lines.extend(emit_song(label, score))
-    lines.extend(["BGM_END:        dw BGM_CLEAR", ""])
     lines.extend(SE_DATA.rstrip().splitlines())
     with OUTPUT.open("w", encoding="utf-8", newline="\n") as stream:
         stream.write("\n".join(lines) + "\n")

@@ -552,8 +552,6 @@ BGM_CLEAR:
         db 2, 10, 08Bh,006h,093h,0AAh,00Ah,0B6h,0C7h,035h,0D7h,0FFh
         db 0FFh                    ; loop
 
-BGM_END:        dw BGM_CLEAR
-
 ; ---- 効果音 ----
 ; 射撃: 鋭いツイン・レーザー風 (PSG tone 0 / volume register 90h)
 SE_SHOT:
