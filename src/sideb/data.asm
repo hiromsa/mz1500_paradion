@@ -116,6 +116,8 @@ BRK_TABLE:      db 094h,095h,096h,097h, 0ACh,0ADh,0AEh,0AFh
                 db 0C4h,0C5h,0C6h,0C7h, 0DCh,0DDh,0DEh,0DFh
                 db 0F4h,0F5h,0F6h,0F7h
 defc BRK_CNT = 20
+; 破壊したタイルの跡地に敷く地面タイル (面順, 左上コード)
+GRND_TBL:       db T_S1_GRASS, T_S2_GROUND, T_S3_GROUND, T_S4_GROUND, T_S5_FLOOR
 SINE16:         db 0,6,11,16,19,21,22,22,22,21,19,16,11,6,0,0
 STAGE_MSGS:     dw MSG_STG1, MSG_STG2, MSG_STG3, MSG_STG4, MSG_STG5
 

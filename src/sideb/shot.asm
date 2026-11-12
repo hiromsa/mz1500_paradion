@@ -79,28 +79,38 @@ SHB_ROW_ALIGNED:
         jr z,SHB_TILE_TOP
         dec hl
 SHB_TILE_TOP:
-        ; ミラーの2x2コードを空にする
-        ld (hl),0
+        ; 破壊したタイルは黒くせず, その面の地面タイルへ置き換える
+        call shb_ground_code            ; B = 地面タイル左上コード (HL 保存)
+        ; ミラーの 2x2 へ地面タイルを書く
+        ld a,b
+        ld (hl),a                       ; TL
         inc hl
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; TR
         ld de,39
         add hl,de
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; BL
         inc hl
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; BR
         ld de,41
         or a
         sbc hl,de                       ; ミラー左上へ戻る
         ld bc,2000h
         add hl,bc                       ; VRAM セルへ戻る
-        ld (hl),0
+        ld a,b
+        ld (hl),a                       ; TL
         inc hl
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; TR
         ld de,39
         add hl,de
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; BL
         inc hl
-        ld (hl),0
+        inc a
+        ld (hl),a                       ; BR
         ld de,41
         or a
         sbc hl,de                       ; VRAM 左上へ戻る
@@ -127,6 +137,24 @@ SHB_OUT:
         pop de
         pop bc
         or a                            ; CY = 0
+        ret
+
+; ------------------------------------------------------------
+; 破壊跡地用の地面タイルコード取得
+; 入力: なし
+; 出力: B = 現在の面の地面タイル左上コード
+; 破壊: A, B, DE, F (HL は保存)
+; ------------------------------------------------------------
+shb_ground_code:
+        push hl
+        ld a,(W_STAGE)
+        dec a
+        ld e,a
+        ld d,0
+        ld hl,GRND_TBL
+        add hl,de
+        ld b,(hl)
+        pop hl
         ret
 
 ; ------------------------------------------------------------
