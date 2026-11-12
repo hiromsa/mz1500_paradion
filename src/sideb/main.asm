@@ -90,7 +90,7 @@ defc W_ITMTIMER = W_WORKTOP + 00Ch   ; アイテム名表示残りフレーム (
 defc W_FRESH = W_WORKTOP + 00Dh      ; 1 = ゲーム開始直後 (GAME START 表示用)
 defc W_FIELDCOL = W_WORKTOP + 00Eh   ; 現ステージのフィールド色 (PCG 置換 + メッセージ背景)
 defc W_RFTBL = W_WORKTOP + 00Fh      ; 2B sprite_recolor_field 用テーブルポインタ退避
-defc W_RFMASK = W_WORKTOP + 011h     ; 3B recolor 用プレーン別置換マスク (B/R/G)
+defc W_RFGRND = W_WORKTOP + 011h     ; 1B recolor の下地に使う地面タイル左上コード (+012h/013h は予備)
 defc W_RFSRC = W_WORKTOP + 014h      ; 2B PCG 復元転送の読み出しポインタ
 defc W_RFDP = W_WORKTOP + 016h       ; 2B SPRC_SRC のカーソル
 ; ---- ゲームバランス定数 ----

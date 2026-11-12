@@ -280,53 +280,32 @@ ERASEATTR2X2:
         ld (hl),PCGATTR_BANK0
         ret
 ; ------------------------------------------------------------
-; スプライト PCG の透過色 (黒) をフィールド色へ一括置換
-; 入力: A = フィールド色 (PCG 3bit, STAGE_TABLE +F)
-; 出力: SPRC_TBL の各範囲 (バンク 1-3) について 黒 (3 プレーン全 0) の
-;       ピクセルを A 色へ書換え (ピクセル単位), 終了時に D000h-EFFFh を
-;       VRAM & I/O へ戻す
-; 破壊: A, B, D, E, IX, F (C, HL は保存)
-; 注意: OUT E5h 選択中は VRAM/MMIO (E002 の V-BLANK 読み含む) が
-;       見えないため, init_stage の
-;       VRAM 転送完了直後 (描画 / メッセージの前) に 1 回だけ呼ぶこと
-;       (約 0.5 秒かかるためステージ切替時の一瞬の静止になる)
-; ------------------------------------------------------------
-; ------------------------------------------------------------
-; スプライト PCG 復元 + 透過色 (黒) → フィールド色置換 (統合処理)
-; 入力: A = フィールド色 (PCG 3bit, STAGE_TABLE +F)
+; スプライト PCG 復元 + 透過合成 (統合処理)
+; 入力: なし (面の地面タイルは W_STAGE から GRND_TBL で引く)
 ; 出力: SPRC_TBL の各範囲 (バンク 1-3) を初期データ (SPRC_SRC, pcggen 生成)
-;       から PCG-RAM へ転送しつつ, 黒 (3 プレーン全 0) のピクセルを
-;       A 色へ書換え (ピクセル単位)。終了時に D000h-EFFFh を VRAM & I/O へ
-;       戻す。復元するのは前の面で黒→地面色に塗った絵が残り, 次の面で
-;       黒として検出できず透過色が前の面の色のままになるバグへの対策
-; 破壊: A, B, D, E, HL, IX, F (C と呼び出し側 HL は push/pop で保護)
+;       から PCG-RAM へ転送しつつ, 透過 (3 プレーン全 0) のピクセルへ
+;       その面の地面タイル模様を下地として合成する (ピクセル単位)。
+;       平坦なフィールド色で塗る旧方式と違い, 地面の上では下地が
+;       地形模様そのものになるためスプライト周囲に四角い継ぎ目が
+;       出ない。終了時に D000h-EFFFh を VRAM & I/O へ戻す。
+;       復元するのは前の面で合成した絵が残り, 次の面で透過として
+;       検出できなくなるバグへの対策
+; 破壊: A, B, C, D, E, HL, IX, IY, F (呼び出し側 HL は push/pop で保護)
 ; 注意: OUT E5h 選択中は VRAM/MMIO (E002 の V-BLANK 読み含む) が見えない
 ;       ため, init_stage の VRAM 転送完了直後 (描画/メッセージの前) に
-;       1 回だけ呼ぶこと (約 0.2 秒 = ステージ切替時の一瞬の静止)
+;       1 回だけ呼ぶこと (ステージ切替時の一瞬の静止になる)
 ; ------------------------------------------------------------
 sprite_recolor_field:
         push hl                         ; 呼び出し側の HL を保護
-        ld c,a                          ; C = フィールド色
-; フィールド色 (3bit) を各プレーンの置換マスク (FFh/00h) に展開
-; (bit0=B, bit1=R, bit2=G — 立っている色成分のプレーンだけ黒を塗る)
-        ld a,c
-        and 001h
-        ld a,0FFh
-        jr nz,SRF_MB
-        xor a
-SRF_MB: ld (W_RFMASK),a                ; B プレーン用マスク
-        ld a,c
-        and 002h
-        ld a,0FFh
-        jr nz,SRF_MR
-        xor a
-SRF_MR: ld (W_RFMASK+1),a               ; R プレーン用マスク
-        ld a,c
-        and 004h
-        ld a,0FFh
-        jr nz,SRF_MG
-        xor a
-SRF_MG: ld (W_RFMASK+2),a               ; G プレーン用マスク
+; 下地に使う地面タイル (左上コード) を面番号から取得
+        ld a,(W_STAGE)
+        dec a
+        ld hl,GRND_TBL
+        ld e,a
+        ld d,0
+        add hl,de
+        ld a,(hl)
+        ld (W_RFGRND),a                 ; 面の地面タイル左上コード
         ld hl,SPRC_TBL
         ld (W_RFTBL),hl                 ; 置換対象テーブルポインタ (HL は置換で使う)
         ld hl,SPRC_SRC
@@ -376,6 +355,7 @@ SRF_BANK:
         ld a,(hl)                       ; A = bank
         inc hl
         ld e,(hl)                       ; E = 開始コード (pop de で失われるため再取得)
+        ld c,e                          ; C = 現在処理中のコード (下地の象限判定用)
         add a,a
         add a,a
         add a,a                         ; bank × 8
@@ -394,7 +374,7 @@ SRF_BANK:
         push hl
         pop ix                           ; IX = 走査位置
 SRF_CODE:
-        push bc                         ; C (フィールド色) と B (残り文字数) を退避
+        push bc                         ; B (残り文字数) と C (現在コード) を退避
 ; --- 復元転送: 初期データ 24 バイト (B/R/G × 8 行) を PCG へ ---
         ld a,001h
         out (PORT_PCG_B),a              ; B プレーン選択
@@ -405,6 +385,21 @@ SRF_CODE:
         ld a,003h
         out (PORT_PCG_B),a              ; G プレーン選択
         call SRF_COPY8
+; 下地ポインタ IY = 地面タイルの当該象限 (コード下位 2 ビット) の先頭
+        ld a,c
+        and 3                           ; 象限 (0=左上, 1=右上, 2=左下, 3=右下)
+        ld e,a
+        ld a,(W_RFGRND)
+        add a,e                         ; 地面サブキャラのコード
+        ld l,a
+        ld h,0
+        add hl,hl
+        add hl,hl
+        add hl,hl                       ; x8 (1 文字 = 8 バイト)
+        ld de,0D000h
+        add hl,de                       ; バンク 0 の窓アドレス
+        push hl
+        pop iy                          ; IY = 下地走査位置 (行ごとに IX と同期)
         ld d,8                          ; D = 行カウンタ (1 文字 = 8 行)
 SRF_ROW:
         ; 3 プレーンを読み, 黒 (3 プレーン全 0) のピクセルビットを求める
@@ -421,26 +416,27 @@ SRF_ROW:
         or h
         or e
         cpl
-        ld h,a                          ; H = 黒ピクセルマスク (R 値は下で再読)
-        ; B プレーン: B | (黒 & B マスク)
-        ld a,h
-        ld a,(W_RFMASK)
+        ld h,a                          ; H = 透過ピクセルマスク (R 値は下で再読)
+        ; B プレーン: B | (下地 B & 透過マスク)
+        ld a,001h
+        out (PORT_PCG_B),a              ; B プレーン選択 (下地も同じ窓で読める)
+        ld a,(iy+0)                     ; 下地 B
         and h
         or l
         push af                         ; 新 B 値を退避
-        ; R プレーン: R | (黒 & R マスク)
+        ; R プレーン: R | (下地 R & 透過マスク)
         ld a,002h
         out (PORT_PCG_B),a
         ld l,(ix+0)                     ; R 値を再読
-        ld a,(W_RFMASK+1)
+        ld a,(iy+0)                     ; 下地 R
         and h
         or l
         push af                         ; 新 R 値を退避
-        ; G プレーン: G | (黒 & G マスク) → その場で書換
+        ; G プレーン: G | (下地 G & 透過マスク) → その場で書換
         ld a,003h
         out (PORT_PCG_B),a
         ld l,(ix+0)                     ; G 値を再読
-        ld a,(W_RFMASK+2)
+        ld a,(iy+0)                     ; 下地 G
         and h
         or l
         ld (ix+0),a                     ; G プレーン書換
@@ -456,11 +452,13 @@ SRF_ROW:
         ld (ix+0),a
 SRF_NROW:
         inc ix
+        inc iy                          ; 下地も次の行へ
         dec d
         jr nz,SRF_ROW
         pop bc
+        inc c                           ; 次のコードへ (下地の象限も進む)
         dec b
-        jr nz,SRF_CODE
+        jp nz,SRF_CODE                  ; (合成処理で距離が伸びたため JP)
         jp SRF_BANK
 SRF_DONE:
         out (PORT_PCG_OFF),a            ; PCG モード解除 (E6h)

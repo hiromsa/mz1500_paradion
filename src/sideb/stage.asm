@@ -73,7 +73,6 @@ init_stage:
         inc hl
         ld a,(hl)                       ; +F: フィールド色 (スプライト黒の置換色)
         ld (W_FIELDCOL),a               ; メッセージ背景色としても使用
-        push af                         ; sprite_recolor_field まで退避
         ld a,(W_MAPCNT)
         dec a
         ld (W_MAPROW),a                 ; 補充開始は末尾行 (fill_row は逆順に遡る)
@@ -122,9 +121,8 @@ IS_PF:
         ld bc,FIELD_BYTES-1
         ld (hl),PCGATTR_BANK0
         ldir
-        ; スプライトの透過色 (黒) をこの面のフィールド色へ一括置換
+        ; スプライトの透過部分へこの面の地面タイル模様を下地として合成
         ; (OUT E5h で PCG ウィンドウへ切替るため VRAM アクセスの前に実施)
-        pop af
         call sprite_recolor_field
         ; 自機初期配置 (スロット 0)
         ld ix,O_TBL
