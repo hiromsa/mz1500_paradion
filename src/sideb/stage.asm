@@ -121,9 +121,6 @@ IS_PF:
         ld bc,FIELD_BYTES-1
         ld (hl),PCGATTR_BANK0
         ldir
-        ; スプライトの透過部分へこの面の地面タイル模様を下地として合成
-        ; (OUT E5h で PCG ウィンドウへ切替るため VRAM アクセスの前に実施)
-        call sprite_recolor_field
         ; 自機初期配置 (スロット 0)
         ld ix,O_TBL
         ld a,1
@@ -166,6 +163,11 @@ IS_MSG:
         call show_msg
         ld hl,180
         ld (W_MSGTIMER),hl
+        ; 時間のかかるスプライト復元+合成はバナー表示の後に行う。
+        ; フィールドと "STAGE n" が先に出るため, 処理中も画面が
+        ; 静止して見えず開始が速く感じられる (処理中は VRAM を
+        ; 触らないため表示はそのまま保たれる)
+        call sprite_recolor_field
         pop de
         jp play_bgm                     ; BGM 開始して戻る
 
