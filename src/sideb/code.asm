@@ -70,5 +70,6 @@ game_init:
         ld (W_STATE),a
         ld hl,0
         ld (W_MSGTIMER),hl
+        ld (W_WAITTIMER),hl
         ld a,1
         jp init_stage                   ; ★旧実装はフォールスルー (A=1 = Stage 1)

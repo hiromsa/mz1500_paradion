@@ -251,5 +251,6 @@ HP_DIE:
         ld a,1
         ld (W_STATDIRTY),a
         ld hl,120
-        ld (W_MSGTIMER),hl              ; W_MSGTIMER を死亡待ちタイマに転用
+        ld (W_WAITTIMER),hl             ; 死亡待ちは専用タイマで数える
+        ld (W_MSGTIMER),hl              ; 表示側の目安 (描画スキップ判定) として同値も置く
         jp hiscore_check

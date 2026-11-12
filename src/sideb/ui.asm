@@ -199,10 +199,25 @@ MSGU_ACT:
 ; 破壊: A, B, C, DE, HL, F
 ; ------------------------------------------------------------
 msgs_attr_off:
-        call msgs_attr_pcg              ; パス 1 (PCG 属性) → パス 2 (色属性)
-msgs_attr_col:
+        call msgs_attr_pcg              ; パス 1: PCG 属性
+        ; パス 2: 色属性の背景 (bit0-2) を文字セルだけフィールド色へ
         ld a,(W_FIELDCOL)
         ld c,a                          ; C = フィールド色 (メッセージの背景色)
+        ld hl,VRAM_ATTR + 9*40
+        ld de,VRAM_TEXT + 9*40
+        ld b,200
+MSGAO_T:ld a,(de)
+        or a
+        jr z,MSGAO_TN
+        ld a,(hl)
+        and 0F8h
+        or c                            ; 背景 = フィールド色
+        ld (hl),a
+MSGAO_TN:
+        inc hl
+        inc de
+        djnz MSGAO_T
+        ret
 
 ; ------------------------------------------------------------
 ; メッセージ領域 (行 9-13) の PCG 属性だけを毎フレーム再 assert
@@ -228,22 +243,6 @@ MSGAO_S:ld a,PCGATTR_BANK0
 MSGAO_N:inc hl
         inc de
         djnz MSGAO_L
-        ret
-        ; パス 2: 色属性の背景 (bit0-2) を文字セルだけフィールド色へ
-        ld hl,VRAM_ATTR + 9*40
-        ld de,VRAM_TEXT + 9*40
-        ld b,200
-MSGAO_T:ld a,(de)
-        or a
-        jr z,MSGAO_TN
-        ld a,(hl)
-        and 0F8h
-        or c                            ; 背景 = フィールド色
-        ld (hl),a
-MSGAO_TN:
-        inc hl
-        inc de
-        djnz MSGAO_T
         ret
 ; ------------------------------------------------------------
 ; アイテム名メッセージ表示 (行 8 中央)

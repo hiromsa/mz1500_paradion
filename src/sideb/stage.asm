@@ -180,6 +180,11 @@ IS_MSG:
 ; 破壊: A, DE, HL, F
 ; ------------------------------------------------------------
 stage_flow:
+        ; 同フレームで被弾し ST_DEATH へ遷移していたらボス出現を取り消す
+        ; (死亡をボス戦開始で上書きしない)
+        ld a,(W_STATE)
+        cp ST_FIELD
+        ret nz
         ld hl,W_PLAYTIMER
         call timer_dec
         ret nz

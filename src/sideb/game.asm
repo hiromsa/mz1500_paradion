@@ -69,7 +69,7 @@ GK_BOSS:
 ; ------------------------------------------------------------
 ; ST_CLEAR: クリア演出 → 次ステージ or エンディング
 ; 入力: なし
-; 出力: 残り演出更新, W_MSGTIMER = 0 で:
+; 出力: 残り演出更新, W_WAITTIMER = 0 で:
 ;       ステージ < 5 → clear_messages + init_stage (次面)
 ;       ステージ = 5 → clear_messages + ending_init
 ; 破壊: A, B, C, DE, HL, IX, F
@@ -80,7 +80,7 @@ GK_CLEAR:
         call pwups_update
         call chest_update
         call itemmsg_update
-        ld hl,W_MSGTIMER
+        ld hl,W_WAITTIMER
         call timer_dec
         ret nz
         ld a,(W_STAGE)
@@ -98,17 +98,17 @@ GKC_TOEND:
 ; ------------------------------------------------------------
 ; ST_DEATH: 死亡演出 → 復帰 or ゲームオーバー
 ; 入力: なし
-; 出力: W_MSGTIMER (死亡待ちタイマを兼ねる) が 0 になったら:
+; 出力: W_WAITTIMER (死亡待ち専用タイマ) が 0 になったら:
 ;       残機 > 0 → W_STATE = W_PREVSTATE 復帰, 自機中央再配置,
 ;                  W_PLRINV = 60, clear_messages
 ;       残機 = 0 → hiscore 更新 + W_STATE = ST_GAMEOVER + 表示
-;       (msgs_update と二重減算しないようここで直接減算する)
+;       (メッセージ表示タイマ W_MSGTIMER とは分離した専用タイマを使う)
 ; 破壊: A, C, DE, HL, IX, F
 ; ------------------------------------------------------------
 GK_DEATH:
         call expls_update
         call eshots_update
-        ld hl,W_MSGTIMER
+        ld hl,W_WAITTIMER
         call timer_dec
         ret nz
         ; 復帰 or ゲームオーバー

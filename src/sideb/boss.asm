@@ -290,7 +290,8 @@ BD_NE:  xor a
         ld de,BGM_CLEAR
         call play_bgm
         ld hl,240
-        ld (W_MSGTIMER),hl
+        ld (W_WAITTIMER),hl             ; クリア待ちは専用タイマで数える
+        ld (W_MSGTIMER),hl              ; 表示側の目安 (描画スキップ判定) として同値も置く
         ld a,ST_CLEAR
         ld (W_STATE),a
         call clear_messages
