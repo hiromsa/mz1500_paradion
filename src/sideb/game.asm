@@ -10,6 +10,7 @@
 ; ------------------------------------------------------------
 game_tick:
         call read_keys
+        call msg_assert_all             ; 表示中メッセージの属性を再 assert (全状態)
         ld a,(W_STATE)
         cp ST_FIELD
         jp z,GK_FIELD
