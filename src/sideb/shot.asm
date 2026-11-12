@@ -97,8 +97,10 @@ SHB_TILE_TOP:
         ld de,41
         or a
         sbc hl,de                       ; ミラー左上へ戻る
+        push bc                         ; 地面コード (B) を退避 (ld bc,2000h で壊れるため)
         ld bc,2000h
         add hl,bc                       ; VRAM セルへ戻る
+        pop bc                          ; B = 地面コード復元
         ld a,b
         ld (hl),a                       ; TL
         inc hl
