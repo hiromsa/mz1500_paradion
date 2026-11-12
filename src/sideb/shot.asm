@@ -153,7 +153,7 @@ IB_YES: pop hl
 ; ------------------------------------------------------------
 ; 敵弾更新 (スロット O_ESHOTS..+3)
 ; 入力: なし
-; 出力: y += 弾速 (面 3 以降 3, 未満 2), x 方向 (attr bit2, 端で停止),
+; 出力: y += 弾速 (面 3 以降 3, 未満 2), x 方向 (attr bit2 = 右, bit4 = 2 倍速, 端で停止),
 ;       y >= 171 で消滅
 ; 破壊: A, B, IX, F
 ; ------------------------------------------------------------
@@ -175,8 +175,8 @@ EU_ADDY:
         jr nc,EU_KILL
         ld (ix+3),a
         ; x 方向 (attr bit2 = 右 / bit3 = 2 倍速, x2 単位)
-        bit 3,(ix+1)
-        jr nz,EU_F2                     ; bit3 = 1 → 照準弾は 2px/移動で飛ぶ
+        bit 4,(ix+1)
+        jr nz,EU_F2                     ; bit4 = 1 → 照準弾は 2px/移動で飛ぶ
         bit 2,(ix+1)
         jr z,EU_L2
         ld a,(ix+2)
@@ -217,7 +217,7 @@ EU_N:   ld de,O_LEN
 ; 敵の位置から照準弾生成
 ; 入力: IX = 発射元敵スロット
 ; 出力: 空き敵弾スロットがあれば敵直下 (y +12) に生成。
-;       自機との x 差から方向 (attr bit2) と 2 倍速 (attr bit3) を設定
+;       自機との x 差から方向 (attr bit2) と 2 倍速 (attr bit4) を設定
 ; 破壊: A, F (BC, DE, HL, IX は保存)
 ; ------------------------------------------------------------
 spawn_eshot_at:
@@ -243,7 +243,7 @@ spawn_eshot_at:
         ld a,1                          ; state
         ld (de),a
         inc de
-        ; 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit3
+        ; 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit4
         ld a,(O_TBL+2)
         ld h,a
         ld a,c                          ; A = 弾 x2 (発射位置)
@@ -252,16 +252,16 @@ spawn_eshot_at:
         ; 弾が自機より右 → 自機へ左進 (bit2 = 0)
         cp 10
         jr nc,SESH_LF                   ; |dx| >= 10 → 2 倍速
-        ld c,046h                       ; 左, 通常
+        ld c,04Ah                       ; 左, 通常 (バンク1 + 1x1, 方向bit2=0, 通常速)
         jr SESH_DA
-SESH_LF:ld c,086h                       ; 左, 2 倍速
+SESH_LF:ld c,05Ah                       ; 左, 2 倍速 (bit4)
         jr SESH_DA
 SESH_NG:neg
         cp 10
         jr nc,SESH_RT                   ; |dx| >= 10 → 2 倍速
-        ld c,04Ah                       ; 右, 通常
+        ld c,04Eh                       ; 右, 通常 (bit2)
         jr SESH_DA
-SESH_RT:ld c,08Eh                       ; 右, 2 倍速
+SESH_RT:ld c,05Eh                       ; 右, 2 倍速 (bit2 + bit4)
 SESH_DA:ld a,c
         ld (de),a
         inc de

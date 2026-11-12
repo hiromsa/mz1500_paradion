@@ -70,7 +70,7 @@ BF_X1:  ld (ix+2),a
         ld a,SP_ESHOT
         ld (ix+4),a
         ld (ix+5),0
-        ; --- 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit3
+        ; --- 照準: dx = 弾 x2 - 自機 x2 (sign) → 方向 bit2 / 2 倍速 bit4
         ld a,(O_TBL+2)
         ld e,a
         ld a,(ix+2)
@@ -79,16 +79,16 @@ BF_X1:  ld (ix+2),a
         ; 弾が自機より右 → 自機へ左進 (bit2 = 0)
         cp 10
         jr nc,BF_LF                     ; |dx| >= 10 → 2 倍速
-        ld a,042h                       ; 左, 通常
+        ld a,04Ah                       ; 左, 通常 (バンク1 + 1x1, 方向bit2=0, 通常速)
         jr BF_SET
-BF_LF:  ld a,082h                       ; 左, 2 倍速
+BF_LF:  ld a,05Ah                       ; 左, 2 倍速 (bit4)
         jr BF_SET
 BF_NEG: neg
         cp 10
         jr nc,BF_RT                     ; |dx| >= 10 → 2 倍速
-        ld a,04Ah                       ; 右, 通常
+        ld a,04Eh                       ; 右, 通常 (bit2)
         jr BF_SET
-BF_RT:  ld a,08Ah                       ; 右, 2 倍速
+BF_RT:  ld a,05Eh                       ; 右, 2 倍速 (bit2 + bit4)
 BF_SET: ld (ix+1),a                     ; 方向 / 速度ビットを反映
         ; +6/+7 (描画済みセル) は消去パスが管理するのでここでは触らない
         ret
