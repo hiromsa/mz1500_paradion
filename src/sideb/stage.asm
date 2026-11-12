@@ -74,8 +74,9 @@ init_stage:
         ld a,(hl)                       ; +F: フィールド色 (スプライト黒の置換色)
         ld (W_FIELDCOL),a               ; メッセージ背景色としても使用
         push af                         ; sprite_recolor_field まで退避
-        xor a
-        ld (W_MAPROW),a
+        ld a,(W_MAPCNT)
+        dec a
+        ld (W_MAPROW),a                 ; 補充開始は末尾行 (fill_row は逆順に遡る)
         ; 雑魚の同時出現上限 = ステージ + 1, 宝箱タイマ初期化
         ld a,(W_STAGE)
         inc a
@@ -98,8 +99,9 @@ init_stage:
         xor a
         ld (W_SCROLLEDUE),a              ; 古いスクロール要求も破棄
         ld (W_TILE_PHASE),a               ; 新しいマップは16x16タイル境界から開始
-        ; プレイフィールド構築
-        ld hl,MIRROR_TOP
+        ; プレイフィールド構築 (最下行から上へ補充: fill_row の逆順と揃え,
+        ; 画面は従来通り 行 0 が最上段の初期配置になる)
+        ld hl,MIRROR_TOP+(FIELD_ROWS-1)*40
         ld b,FIELD_ROWS
 IS_PF:
         push bc
@@ -107,7 +109,8 @@ IS_PF:
         call fill_row                   ; HL に 40 バイト補充
         pop hl
         ld bc,40
-        add hl,bc
+        or a
+        sbc hl,bc                       ; 1 行上へ
         pop bc
         djnz IS_PF
         ld hl,MIRROR_TOP
