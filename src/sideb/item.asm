@@ -42,7 +42,9 @@ PUW_AY: cp 14
         xor a
         ld (ix+0),a                     ; 先に消滅させてから適用
         pop af
+        push bc                         ; ループカウンタ保護 (show_msg 経由で B が壊れる)
         call pwup_apply
+        pop bc
         jr PUW_KILL
 PUW_KILL:
         xor a
@@ -58,7 +60,7 @@ PUW_N:  ld de,O_LEN
 ; 出力: コードに応じ W_PLRTWIN / W_PLRSPD / W_PLRSHIELD / W_LIVES を
 ;       更新 (1UP は上限 6) + アイテム名を画面中央 (行 8) に表示 +
 ;       SE(パワーアップ) 再生
-; 破壊: A, DE, HL, F (B は保存 → ループカウンタに影響しない)
+; 破壊: A, B, C, DE, HL, F (呼び出し側で BC を保存すること)
 ; ------------------------------------------------------------
 pwup_apply:
         cp SP_PW_TWIN

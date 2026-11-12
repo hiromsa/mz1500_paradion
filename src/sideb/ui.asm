@@ -333,10 +333,10 @@ msg_attr_off:
         add hl,hl
         add hl,hl                       ; 32r
         add hl,de                       ; HL = 40r (セルオフセット)
+        ld de,VRAM_TEXT
+        add hl,de                       ; HL = テキストの行先頭 (0D000h+)
         ld a,(W_FIELDCOL)
         ld c,a                          ; C = フィールド色 (メッセージの背景色)
-        ld bc,VRAM_TEXT
-        add hl,bc                       ; HL = テキストの行先頭 (0D000h+)
         push hl
         ld bc,0C00h                     ; テキスト → PCG 属性は +0C00h
         add hl,bc                       ; HL = PCG 属性の行先頭 (0DC00h+)
@@ -365,6 +365,8 @@ MAO_N:  inc hl
         ld bc,0800h                     ; テキスト → 色属性は +0800h
         add hl,bc                       ; HL = 色属性の行先頭 (0D800h+)
         ex de,hl                        ; DE = 色属性ポインタ, HL = テキストポインタ
+        ld a,(W_FIELDCOL)
+        ld c,a                          ; C = フィールド色 (上の ld bc で壊れるためここで取得)
         ld b,40
 MAO_T:  ld a,(hl)
         or a
