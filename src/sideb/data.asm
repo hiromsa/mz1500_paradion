@@ -93,10 +93,10 @@ BOSS_CODE_TBL:
 SPRC_TBL:
         db 1, 000h, 042h                ; bank1: 自機/弾/爆発/アイテム 00h-41h
         db 2, 000h, 034h                ; bank2: 雑魚 6 種 + 宝箱 00h-33h
-        db 3, 000h, 031h                ; bank3: ボス1 + ボス5 形態1 00h-30h
-        db 3, 040h, 011h                ; bank3: ボス2 40h-50h
-        db 3, 080h, 011h                ; bank3: ボス3 80h-90h
-        db 3, 0A0h, 011h                ; bank3: ボス5 形態2 A0h-B0h
+        db 3, 000h, 040h                ; bank3: ボス1 + ボス5 形態1 00h-3Fh (両フレーム)
+        db 3, 040h, 020h                ; bank3: ボス2 40h-5Fh (両フレーム)
+        db 3, 080h, 020h                ; bank3: ボス3 80h-9Fh (両フレーム)
+        db 3, 0A0h, 020h                ; bank3: ボス5 形態2 A0h-BFh (両フレーム)
         db 3, 0C0h, 020h                ; bank3: ボス4 C0h-DFh
         db 0                            ; 終端
 ; --- 復元データ (pcg_restore.asm) の src 先頭 (SPRC_TBL エントリ順に対応) ---
